@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Settings may be backed up; raw battery history is device-specific and excluded. -->
+    <exclude domain="database" path="charge_master.db" />
+    <exclude domain="database" path="charge_master.db-wal" />
+    <exclude domain="database" path="charge_master.db-shm" />
+</full-backup-content>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Compose colors live in core/design/Theme.kt; these are for XML themes only. -->
+    <color name="background_light">#F5F8F6</color>
+    <color name="background_dark">#0D1713</color>
+</resources>
