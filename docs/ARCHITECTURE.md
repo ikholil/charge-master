@@ -56,7 +56,8 @@ com.chargemaster.app
 | `AlertEvaluator` | Threshold crossing, hysteresis, once-per-session rules |
 | `CapacityEstimator` | ΔQ/ΔLevel capacity, derived-counter detection, confidence, median combine, wear trend |
 | `DischargeAnalyzer` | Discharge rates from consecutive unplugged samples (skips gaps > 2 h) |
-| `TemperatureAnalyzer`, `ChargingAnalyzer`, `TimeEstimator` | Stats and ETAs, each with its method recorded |
+| `TemperatureAnalyzer`, `ChargingAnalyzer`, `TimeEstimator` | Stats (calendar days in the local time zone) and ETAs, each with its method recorded |
+| `HabitAnalyzer` | Charging Habit Score from the user's own thresholds; needs ≥3 completed sessions |
 
 ## Monitoring and energy use
 
@@ -74,6 +75,13 @@ com.chargemaster.app
 - Health % requires a design capacity and at least medium confidence.
 - The cycle count is shown only from `BatteryManager.EXTRA_CYCLE_COUNT` (API 34+).
 - Charts break the line at gaps in monitoring instead of interpolating across them.
+
+## Preferences and backup
+
+- User settings live in the `charge_master_prefs` DataStore and are included in Android backup.
+- Device-specific learned state lives in the separate `charge_master_device_state` DataStore. This includes the current unit and sign calibration and the alert de-duplication state. It is excluded from backup and device transfer, because another phone's calibration would misread this phone's sensors.
+- The battery history database is also excluded from backup.
+- The in-app language is applied with `AppCompatDelegate.setApplicationLocales`. On Android 13+ it is stored by the system; on Android 8–12 it is stored by `AppLocalesMetadataHolderService`.
 
 ## Database
 

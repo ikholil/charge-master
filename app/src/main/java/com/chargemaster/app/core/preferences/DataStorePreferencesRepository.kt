@@ -18,6 +18,7 @@ import com.chargemaster.app.domain.model.CalibrationMode
 import com.chargemaster.app.domain.model.CurrentCalibration
 import com.chargemaster.app.domain.model.CurrentSign
 import com.chargemaster.app.domain.model.CurrentUnit
+import com.chargemaster.app.domain.model.DashboardCard
 import com.chargemaster.app.domain.model.MonitoringMode
 import com.chargemaster.app.domain.model.TemperatureUnit
 import com.chargemaster.app.domain.model.ThemeMode
@@ -33,6 +34,14 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "charge_master_prefs")
+
+/**
+ * Device-specific learned state (current calibration, alert de-dup). Kept separate and excluded
+ * from backup: restoring another phone's calibration would misread this phone's sensors.
+ */
+private val Context.deviceStateStore: DataStore<Preferences> by preferencesDataStore(name = DEVICE_STATE_STORE)
+
+const val DEVICE_STATE_STORE = "charge_master_device_state"
 
 @Singleton
 class DataStorePreferencesRepository @Inject constructor(
@@ -52,6 +61,7 @@ class DataStorePreferencesRepository @Inject constructor(
         val design = intPreferencesKey("design_capacity_mah")
         val unitMode = stringPreferencesKey("current_unit_mode")
         val signMode = stringPreferencesKey("current_sign_mode")
+        val cards = stringSetPreferencesKey("dashboard_cards")
         // alerts
         val aLow = booleanPreferencesKey("alert_low")
         val aLowT = intPreferencesKey("alert_low_threshold")
@@ -86,6 +96,14 @@ class DataStorePreferencesRepository @Inject constructor(
         if (e is IOException) emit(emptyPreferences()) else throw e
     }
 
+    private val deviceData: Flow<Preferences> = context.deviceStateStore.data.catch { e ->
+        if (e is IOException) emit(emptyPreferences()) else throw e
+    }
+
+    private suspend fun editDevice(block: (androidx.datastore.preferences.core.MutablePreferences) -> Unit) {
+        context.deviceStateStore.edit { block(it) }
+    }
+
     override val preferences: Flow<UserPreferences> = data.map { p ->
         val d = AlertPreferences()
         UserPreferences(
@@ -101,6 +119,8 @@ class DataStorePreferencesRepository @Inject constructor(
             designCapacityMah = p[K.design]?.takeIf { it > 0 },
             currentUnitMode = enumOrDefault(p[K.unitMode] ?: "", CalibrationMode.AUTO),
             currentSignMode = enumOrDefault(p[K.signMode] ?: "", CalibrationMode.AUTO),
+            dashboardCards = p[K.cards]?.mapNotNull { n -> runCatching { DashboardCard.valueOf(n) }.getOrNull() }?.toSet()
+                ?: DashboardCard.entries.toSet(),
             alerts = AlertPreferences(
                 lowBatteryEnabled = p[K.aLow] ?: d.lowBatteryEnabled,
                 lowBatteryThreshold = p[K.aLowT] ?: d.lowBatteryThreshold,
@@ -157,21 +177,23 @@ class DataStorePreferencesRepository @Inject constructor(
         }
     }
 
+    override suspend fun setDashboardCards(cards: Set<DashboardCard>) = edit { it[K.cards] = cards.map { c -> c.name }.toSet() }
+
     override suspend fun calibration(): CurrentCalibration {
-        val p = data.first()
+        val p = deviceData.first()
         return CurrentCalibration(
             learnedUnit = p[K.calUnit]?.let { runCatching { CurrentUnit.valueOf(it) }.getOrNull() },
             learnedSign = p[K.calSign]?.let { runCatching { CurrentSign.valueOf(it) }.getOrNull() },
         )
     }
 
-    override suspend fun setCalibration(calibration: CurrentCalibration) = edit {
+    override suspend fun setCalibration(calibration: CurrentCalibration) = editDevice {
         calibration.learnedUnit?.let { u -> it[K.calUnit] = u.name } ?: it.remove(K.calUnit)
         calibration.learnedSign?.let { s -> it[K.calSign] = s.name } ?: it.remove(K.calSign)
     }
 
     override suspend fun alertState(): AlertState {
-        val p = data.first()
+        val p = deviceData.first()
         return AlertState(
             wasPlugged = p[K.sWasPlugged]?.toBooleanStrictOrNull(),
             plugStartLevel = p[K.sStartLevel]?.takeIf { it >= 0 },
@@ -184,7 +206,7 @@ class DataStorePreferencesRepository @Inject constructor(
         )
     }
 
-    override suspend fun setAlertState(state: AlertState) = edit {
+    override suspend fun setAlertState(state: AlertState) = editDevice {
         state.wasPlugged?.let { v -> it[K.sWasPlugged] = v.toString() } ?: it.remove(K.sWasPlugged)
         it[K.sStartLevel] = state.plugStartLevel ?: -1
         it[K.sLow] = state.lowFired

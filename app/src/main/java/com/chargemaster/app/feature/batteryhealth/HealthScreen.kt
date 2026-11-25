@@ -22,6 +22,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -118,7 +119,7 @@ fun HealthScreen(onOpenDiagnostics: () -> Unit, onOpenTemperature: () -> Unit, v
                 Spacer(Modifier.height(6.dp))
                 Text(stringResource(R.string.capacity_method_explainer, CapacityEstimator.MIN_SPAN_PERCENT),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(stringResource(R.string.capacity_measurements, st.history.size), style = MaterialTheme.typography.bodySmall,
+                Text(pluralStringResource(R.plurals.capacity_measurements, st.history.size, st.history.size), style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (s?.chargeCounterMah == null) {
                     Spacer(Modifier.height(6.dp))

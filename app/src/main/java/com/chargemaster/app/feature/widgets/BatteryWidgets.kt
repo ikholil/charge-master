@@ -7,6 +7,7 @@ import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
+import androidx.glance.LocalSize
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
@@ -156,6 +157,13 @@ class DetailedBatteryWidget : GlanceAppWidget() {
         provideContent {
             GlanceTheme(colors = widgetColors) {
                 WidgetSurface("${d.levelText}, ${d.statusText}, $tempLabel ${d.temperatureText}, $voltLabel ${d.voltageText}") {
+                    // Narrow placement: stack the values instead of using two columns.
+                    if (LocalSize.current.width < 160.dp) {
+                        Text(d.levelText, style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold, color = GlanceTheme.colors.primary))
+                        Text(d.temperatureText, style = TextStyle(fontSize = 12.sp, color = GlanceTheme.colors.onSurface))
+                        Text(d.voltageText, style = TextStyle(fontSize = 12.sp, color = GlanceTheme.colors.onSurfaceVariant))
+                        return@WidgetSurface
+                    }
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = GlanceModifier.fillMaxWidth()) {
                         Column(modifier = GlanceModifier.defaultWeight()) {
                             Text(d.levelText, style = TextStyle(fontSize = 30.sp, fontWeight = FontWeight.Bold, color = GlanceTheme.colors.primary))
@@ -187,14 +195,15 @@ class ChargingBatteryWidget : GlanceAppWidget() {
                         Spacer(GlanceModifier.width(8.dp))
                         Text(d.sourceText, style = TextStyle(fontSize = 12.sp, color = GlanceTheme.colors.onSurfaceVariant))
                     }
-                    Spacer(GlanceModifier.height(8.dp))
-                    LinearProgressIndicator(
+                    val compact = LocalSize.current.height < 90.dp
+                    if (!compact) Spacer(GlanceModifier.height(8.dp))
+                    if (!compact) LinearProgressIndicator(
                         progress = (d.level ?: 0) / 100f,
                         modifier = GlanceModifier.fillMaxWidth().height(8.dp),
                         color = GlanceTheme.colors.primary,
                         backgroundColor = GlanceTheme.colors.surfaceVariant,
                     )
-                    Spacer(GlanceModifier.height(8.dp))
+                    Spacer(GlanceModifier.height(if (compact) 2.dp else 8.dp))
                     Text(d.etaText, style = TextStyle(fontSize = 12.sp, color = GlanceTheme.colors.onSurface))
                 }
             }

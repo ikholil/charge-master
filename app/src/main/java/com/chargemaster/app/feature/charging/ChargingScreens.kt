@@ -15,6 +15,15 @@ import androidx.compose.material.icons.outlined.Power
 import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.Thermostat
 import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.pluralStringResource
+import com.chargemaster.app.core.design.timeText
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -53,6 +62,7 @@ import com.chargemaster.app.domain.model.ChargingSession
 import com.chargemaster.app.domain.model.ChargingStatus
 import com.chargemaster.app.domain.model.SessionEndReason
 import com.chargemaster.app.domain.model.TemperatureUnit
+import com.chargemaster.app.feature.dashboard.LastChargeCard
 import com.chargemaster.app.feature.dashboard.methodText
 import kotlin.math.abs
 
@@ -78,6 +88,9 @@ fun ChargingScreen(onOpenHistory: () -> Unit, onOpenSession: (Long) -> Unit, vm:
                 Spacer(Modifier.height(6.dp))
                 Text(s?.level?.let(Fmt::percent) ?: stringResource(R.string.unavailable), style = MaterialTheme.typography.headlineSmall)
             }
+        }
+        if (s != null && !s.isPluggedIn) st.recent.firstOrNull { !it.isOpen }?.let { last ->
+            item { LastChargeCard(last, s.timestamp) { onOpenSession(last.id) } }
         }
         item {
             MetricGrid(
@@ -120,6 +133,7 @@ fun ChargingScreen(onOpenHistory: () -> Unit, onOpenSession: (Long) -> Unit, vm:
                         description = stringResource(R.string.chart_live_power_desc, Fmt.power(pts.minOf { it.y }), Fmt.power(pts.maxOf { it.y }), Fmt.power(pts.last().y)),
                         yLabel = { Fmt.decimal1(it) + " W" },
                         gapThreshold = 30f,
+                        xLabels = timeText(st.livePower.first().timestamp) to stringResource(R.string.now),
                     )
                     Text(stringResource(R.string.live_chart_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
@@ -173,11 +187,17 @@ fun ChargingHistoryScreen(onBack: () -> Unit, onOpenSession: (Long) -> Unit, vm:
         item {
             AppCard {
                 SectionHeader(stringResource(R.string.charging_calendar))
+                val locale = java.util.Locale.getDefault()
+                val labels = stats.days.mapIndexed { i, d ->
+                    if (stats.days.size <= 7) d.dayOfWeek.getDisplayName(java.time.format.TextStyle.NARROW, locale)
+                    else if ((stats.days.size - 1 - i) % 5 == 0) String.format(locale, "%d", d.dayOfMonth) else ""
+                }
                 BarChart(
                     stats.sessionsPerDay.map { it.toFloat() },
                     description = stringResource(R.string.chart_sessions_per_day_desc, stats.sessionCount, stats.sessionsPerDay.size),
+                    labels = labels,
                 )
-                Text(stringResource(R.string.sessions_count, stats.sessionCount), style = MaterialTheme.typography.bodySmall,
+                Text(pluralStringResource(R.plurals.sessions_count, stats.sessionCount, stats.sessionCount), style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
@@ -228,7 +248,22 @@ fun ChargingHistoryScreen(onBack: () -> Unit, onOpenSession: (Long) -> Unit, vm:
 fun SessionDetailScreen(onBack: () -> Unit, vm: SessionDetailViewModel = hiltViewModel()) {
     val st by vm.state.collectAsStateWithLifecycle()
     val s = st.session
-    ScreenScaffold(title = stringResource(R.string.session_details), onBack = onBack) {
+    var confirmDelete by rememberSaveable { mutableStateOf(false) }
+    if (confirmDelete) AlertDialog(
+        onDismissRequest = { confirmDelete = false },
+        title = { Text(stringResource(R.string.delete_session)) },
+        text = { Text(stringResource(R.string.delete_session_confirm)) },
+        confirmButton = { TextButton(onClick = { confirmDelete = false; vm.delete(onBack) }) { Text(stringResource(R.string.delete)) } },
+        dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.cancel)) } },
+    )
+    ScreenScaffold(
+        title = stringResource(R.string.session_details), onBack = onBack,
+        actions = {
+            if (s != null && !s.isOpen) IconButton(onClick = { confirmDelete = true }) {
+                Icon(Icons.Outlined.DeleteOutline, stringResource(R.string.delete_session))
+            }
+        },
+    ) {
         if (s == null) {
             if (st.loaded) item { EmptyState(R.string.session_not_found, R.string.session_not_found_body) }
             return@ScreenScaffold
@@ -262,6 +297,20 @@ fun SessionDetailScreen(onBack: () -> Unit, vm: SessionDetailViewModel = hiltVie
             }
         }
         if (!s.isComplete && !s.isOpen) item { InfoBanner(stringResource(R.string.partial_session_explainer), tint = Tokens.Warning) }
+        if (st.typicalPowerW != null || st.typicalPercentPerHour != null) item {
+            AppCard {
+                SectionHeader(stringResource(R.string.compared_to_usual, stringResource(s.source.labelRes())))
+                KeyValueRow(stringResource(R.string.average_power),
+                    listOfNotNull(s.averagePowerW?.let(Fmt::power), st.typicalPowerW?.let { stringResource(R.string.usual_value, Fmt.power(it)) })
+                        .joinToString(" · ").ifEmpty { null })
+                KeyValueRow(stringResource(R.string.charge_speed),
+                    listOfNotNull(s.percentPerHour?.let(Fmt::rate), st.typicalPercentPerHour?.let { stringResource(R.string.usual_value, Fmt.rate(it)) })
+                        .joinToString(" · ").ifEmpty { null })
+                Text(stringResource(R.string.speed_comparison_note), style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        val span = timeText(s.startTime) to timeText(s.endTime ?: s.lastSampleTime)
         val readings = st.readings
         item {
             AppCard {
@@ -269,7 +318,7 @@ fun SessionDetailScreen(onBack: () -> Unit, vm: SessionDetailViewModel = hiltVie
                 val pts = readings.mapNotNull { r -> r.level?.let { ChartPoint((r.timestamp - s.startTime) / 60_000f, it.toFloat()) } }
                 if (pts.size < 2) Text(stringResource(R.string.not_enough_samples)) else
                     LineChart(pts, stringResource(R.string.chart_level_desc, Fmt.percent(pts.first().y.toInt()), Fmt.percent(pts.last().y.toInt())),
-                        minY = 0f, maxY = 100f, yLabel = { "${it.toInt()}%" }, gapThreshold = 45f, showDots = true)
+                        minY = 0f, maxY = 100f, yLabel = { "${it.toInt()}%" }, gapThreshold = 45f, showDots = true, xLabels = span)
             }
         }
         item {
@@ -278,7 +327,7 @@ fun SessionDetailScreen(onBack: () -> Unit, vm: SessionDetailViewModel = hiltVie
                 val pts = readings.mapNotNull { r -> r.powerW?.takeIf { it > 0 }?.let { ChartPoint((r.timestamp - s.startTime) / 60_000f, it) } }
                 if (pts.size < 2) Text(stringResource(R.string.not_enough_samples)) else
                     LineChart(pts, stringResource(R.string.chart_live_power_desc, Fmt.power(pts.minOf { it.y }), Fmt.power(pts.maxOf { it.y }), Fmt.power(pts.last().y)),
-                        yLabel = { Fmt.decimal1(it) + " W" }, color = MaterialTheme.colorScheme.secondary, gapThreshold = 45f, showDots = true)
+                        yLabel = { Fmt.decimal1(it) + " W" }, color = MaterialTheme.colorScheme.secondary, gapThreshold = 45f, showDots = true, xLabels = span)
             }
         }
         item {
@@ -287,7 +336,7 @@ fun SessionDetailScreen(onBack: () -> Unit, vm: SessionDetailViewModel = hiltVie
                 val pts = readings.mapNotNull { r -> r.temperatureC?.let { ChartPoint((r.timestamp - s.startTime) / 60_000f, com.chargemaster.app.core.common.TemperatureConverter.fromCelsius(it, st.unit)) } }
                 if (pts.size < 2) Text(stringResource(R.string.not_enough_samples)) else
                     LineChart(pts, stringResource(R.string.chart_temp_desc, Fmt.decimal1(pts.minOf { it.y }), Fmt.decimal1(pts.maxOf { it.y })),
-                        yLabel = { Fmt.decimal1(it) + "°" }, color = Tokens.Warning, gapThreshold = 45f, showDots = true)
+                        yLabel = { Fmt.decimal1(it) + "°" }, color = Tokens.Warning, gapThreshold = 45f, showDots = true, xLabels = span)
             }
         }
         st.capacity?.let { est ->

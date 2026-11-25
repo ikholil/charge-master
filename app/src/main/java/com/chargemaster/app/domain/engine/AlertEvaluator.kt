@@ -56,14 +56,16 @@ object AlertEvaluator {
             if (plugged) {
                 if (prefs.chargingStartedEnabled) alerts += BatteryAlert.ChargingStarted(s.source, level)
             } else {
-                if (prefs.chargingStoppedEnabled && s.status != ChargingStatus.FULL) alerts += BatteryAlert.ChargingStopped(level)
+                // "Interrupted" only when unplugged before the charge completed.
+                val finished = st.completeFired || (level != null && level >= 100)
+                if (prefs.chargingStoppedEnabled && !finished) alerts += BatteryAlert.ChargingStopped(level)
             }
         }
         if (plugged && st.wasPlugged != true) {
             st = st.copy(
                 plugStartLevel = openSession?.startLevel ?: level,
                 firedThresholds = emptySet(), completeFired = false,
-                longChargeFired = false, unusualFired = false, lowFired = false,
+                longChargeFired = false, unusualFired = false,
             )
         }
         if (!plugged && st.wasPlugged == true) {

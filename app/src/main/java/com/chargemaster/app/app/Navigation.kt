@@ -1,6 +1,7 @@
 package com.chargemaster.app.app
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BatteryChargingFull
@@ -96,7 +97,8 @@ fun ChargeMasterNavHost(startOnboarding: Boolean, nav: NavHostController = remem
         NavHost(
             navController = nav,
             startDestination = if (startOnboarding) Routes.ONBOARDING else Routes.OVERVIEW,
-            modifier = Modifier.padding(bottom = padding.calculateBottomPadding()),
+            // Consume the bar's insets so inner screens don't pad for the navigation bar twice.
+            modifier = Modifier.padding(bottom = padding.calculateBottomPadding()).consumeWindowInsets(padding),
         ) {
             val back: () -> Unit = { nav.popBackStack() }
             composable(Routes.ONBOARDING) {

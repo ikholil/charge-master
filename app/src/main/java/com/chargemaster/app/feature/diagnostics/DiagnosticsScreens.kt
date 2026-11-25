@@ -1,6 +1,11 @@
 package com.chargemaster.app.feature.diagnostics
 
 import android.content.Intent
+import android.widget.Toast
+import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -181,6 +186,8 @@ fun ReportScreen(onBack: () -> Unit, vm: DiagnosticsViewModel = hiltViewModel())
     val context = LocalContext.current
     val chooserTitle = stringResource(R.string.share_report)
     val subject = stringResource(R.string.report_title)
+    val clipboard = LocalClipboardManager.current
+    val copiedText = stringResource(R.string.copied)
     ScreenScaffold(title = stringResource(R.string.battery_report), onBack = onBack) {
         item { InfoBanner(stringResource(R.string.report_privacy_note)) }
         item {
@@ -196,6 +203,14 @@ fun ReportScreen(onBack: () -> Unit, vm: DiagnosticsViewModel = hiltViewModel())
                     Icon(Icons.Outlined.Share, null)
                     Spacer(Modifier.width(8.dp))
                     Text(chooserTitle)
+                }
+                OutlinedButton(enabled = st.report.isNotEmpty(), onClick = {
+                    clipboard.setText(AnnotatedString(st.report))
+                    Toast.makeText(context, copiedText, Toast.LENGTH_SHORT).show()
+                }) {
+                    Icon(Icons.Outlined.ContentCopy, null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.copy))
                 }
             }
         }

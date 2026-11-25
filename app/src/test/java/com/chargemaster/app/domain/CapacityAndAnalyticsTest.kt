@@ -142,12 +142,26 @@ class ChargingAnalyticsTest {
         val now = 10 * 86_400_000L
         val fast = session(now - 3 * 86_400_000L, 20, 80, 60)
         val slow = session(now - 2 * 86_400_000L, 20, 50, 120, ChargingSource.USB, current = 500f)
-        val stats = ChargingAnalyzer.analyze(listOf(fast, slow), now, 7)
+        val stats = ChargingAnalyzer.analyze(listOf(fast, slow), now, 7, java.time.ZoneOffset.UTC)
         assertEquals(fast, stats.fastest)
         assertEquals(slow, stats.slowest)
         assertEquals(2, stats.bySource.size)
         assertEquals(7, stats.sessionsPerDay.size)
         assertEquals(2, stats.sessionsPerDay.sum())
+        assertEquals(java.time.LocalDate.of(1970, 1, 11), stats.days.last())
+        assertEquals(1, stats.sessionsPerDay[3]) // Jan 8
+        assertEquals(1, stats.sessionsPerDay[4]) // Jan 9
+    }
+
+    @Test fun `sessions are bucketed by local calendar day`() {
+        // 23:30 and 00:30 local time fall on different days even though they're 1 h apart.
+        val zone = java.time.ZoneId.of("Asia/Dhaka")
+        val day = java.time.LocalDate.of(2026, 11, 20)
+        fun at(h: Int, m: Int) = day.atTime(h, m).atZone(zone).toInstant().toEpochMilli()
+        val a = session(at(23, 0), 20, 40, 20)
+        val b = session(at(23, 0) + 90 * MIN, 40, 60, 20)
+        val stats = ChargingAnalyzer.analyze(listOf(a, b), at(23, 0) + 2 * HOUR, 2, zone)
+        assertEquals(listOf(1, 1), stats.sessionsPerDay)
     }
 
     @Test fun `typical power needs five sessions`() {
@@ -167,5 +181,39 @@ class ChargingAnalyticsTest {
         assertEquals(0L, TimeEstimator.timeToLevel(80, 85, null, s, null, null)!!.minutes)
         assertNull(TimeEstimator.timeToLevel(80, 50, null, null, null, null))
         assertEquals(EstimateMethod.CURRENT_AND_CAPACITY, TimeEstimator.timeToLevel(80, 50, null, null, 2000f, 4000f)!!.method)
+    }
+}
+
+class HabitAnalyzerTest {
+    private val acc = SessionAccumulator()
+    private val prefs = com.chargemaster.app.domain.model.AlertPreferences()
+
+    private fun s(from: Int, to: Int, maxTemp: Float = 32f, minutes: Int = 60) = run {
+        var x = (acc.onSample(null, null, null, snapshot(0, from, ChargingSource.AC, temp = maxTemp)) as SessionAccumulator.Update.Started).session
+        x = (acc.onSample(x, null, null, snapshot(minutes * MIN, to, ChargingSource.AC, temp = maxTemp)) as SessionAccumulator.Update.Updated).session
+        (acc.onSample(x, null, null, snapshot(minutes * MIN + MIN, to)) as SessionAccumulator.Update.Closed).session
+    }
+
+    @Test fun `needs minimum sessions`() {
+        val h = com.chargemaster.app.domain.engine.HabitAnalyzer.analyze(listOf(s(30, 80), s(30, 80)), prefs)
+        assertNull(h.score)
+        assertEquals(2, h.sessionCount)
+    }
+
+    @Test fun `perfect habits score 100`() {
+        val h = com.chargemaster.app.domain.engine.HabitAnalyzer.analyze(List(4) { s(30, 80) }, prefs)
+        assertEquals(100, h.score)
+        assertEquals(4, h.indicators.size)
+    }
+
+    @Test fun `indicators reflect each habit`() {
+        val list = listOf(s(30, 80), s(10, 100), s(25, 85, maxTemp = 45f), s(40, 100, minutes = 8 * 60))
+        val h = com.chargemaster.app.domain.engine.HabitAnalyzer.analyze(list, prefs)
+        val byType = h.indicators.associateBy { it.indicator }
+        assertEquals(2, byType.getValue(com.chargemaster.app.domain.engine.HabitAnalyzer.Indicator.STOPPED_NEAR_TARGET).met)
+        assertEquals(3, byType.getValue(com.chargemaster.app.domain.engine.HabitAnalyzer.Indicator.AVOIDED_DEEP_DISCHARGE).met)
+        assertEquals(3, byType.getValue(com.chargemaster.app.domain.engine.HabitAnalyzer.Indicator.STAYED_COOL).met)
+        assertEquals(3, byType.getValue(com.chargemaster.app.domain.engine.HabitAnalyzer.Indicator.AVOIDED_LONG_CHARGES).met)
+        assertEquals(69, h.score) // mean of 0.5, 0.75, 0.75, 0.75
     }
 }

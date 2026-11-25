@@ -3,6 +3,10 @@ package com.chargemaster.app.domain.engine
 import com.chargemaster.app.domain.model.BatteryReading
 import com.chargemaster.app.domain.model.ChargingSession
 import com.chargemaster.app.domain.model.ChargingSource
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 
 data class DischargeStats(
     val observedHours: Float,
@@ -99,22 +103,25 @@ data class ChargingStats(
     val slowest: ChargingSession?,
     val peakPowerW: Float?,
     val bySource: List<SourceStats>,
-    /** Number of sessions per day bucket (index 0 = oldest). */
+    /** Number of sessions started on each local calendar day (index 0 = oldest). */
     val sessionsPerDay: List<Int>,
+    /** The calendar days matching [sessionsPerDay]. */
+    val days: List<LocalDate>,
 )
 
 object ChargingAnalyzer {
     /** Speed comparisons need at least this much gain to be meaningful. */
     private const val MIN_GAIN_FOR_SPEED = 10
 
-    fun analyze(sessions: List<ChargingSession>, now: Long, days: Int): ChargingStats {
+    fun analyze(sessions: List<ChargingSession>, now: Long, days: Int, zone: ZoneId = ZoneId.systemDefault()): ChargingStats {
         val closed = sessions.filter { !it.isOpen }
         val speedEligible = closed.filter { (it.levelGain ?: 0) >= MIN_GAIN_FOR_SPEED && it.percentPerHour != null }
+        val today = Instant.ofEpochMilli(now).atZone(zone).toLocalDate()
+        val dayList = (days - 1 downTo 0).map { today.minusDays(it.toLong()) }
         val perDay = IntArray(days)
-        val dayMs = 86_400_000L
-        val startOfWindow = now - days * dayMs
         sessions.forEach { s ->
-            val idx = ((s.startTime - startOfWindow) / dayMs).toInt()
+            val d = Instant.ofEpochMilli(s.startTime).atZone(zone).toLocalDate()
+            val idx = days - 1 - ChronoUnit.DAYS.between(d, today).toInt()
             if (idx in 0 until days) perDay[idx]++
         }
         return ChargingStats(
@@ -133,6 +140,7 @@ object ChargingAnalyzer {
                 )
             }.sortedByDescending { it.sessions },
             sessionsPerDay = perDay.toList(),
+            days = dayList,
         )
     }
 

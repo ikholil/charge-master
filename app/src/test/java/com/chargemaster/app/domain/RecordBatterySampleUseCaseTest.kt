@@ -92,6 +92,7 @@ class FakePrefs(initial: UserPreferences = UserPreferences()) : PreferencesRepos
     override suspend fun setCurrentUnitMode(mode: CalibrationMode) {}
     override suspend fun setCurrentSignMode(mode: CalibrationMode) {}
     override suspend fun updateAlerts(transform: (AlertPreferences) -> AlertPreferences) { state.value = state.value.copy(alerts = transform(state.value.alerts)) }
+    override suspend fun setDashboardCards(cards: Set<com.chargemaster.app.domain.model.DashboardCard>) { state.value = state.value.copy(dashboardCards = cards) }
     override suspend fun calibration() = cal
     override suspend fun setCalibration(calibration: CurrentCalibration) { cal = calibration }
     override suspend fun alertState() = alert

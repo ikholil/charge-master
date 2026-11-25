@@ -8,7 +8,7 @@ Build a debug APK:
 ./gradlew :app:assembleDebug
 ```
 
-Run unit, Robolectric and Compose UI tests (69 tests):
+Run unit, Robolectric and Compose UI tests (81 tests):
 
 ```bash
 ./gradlew :app:testDebugUnitTest
@@ -53,7 +53,7 @@ Robolectric downloads Android framework jars at test time. If Maven Central is b
 
 ## Reference screenshots
 
-`ScreenshotTest` renders dashboard screenshots (light, dark, Bangla) to `app/build/screenshots/` using Robolectric native graphics.
+`ScreenshotTest` renders dashboard screenshots (light, dark, Bangla, AMOLED on battery) to `app/build/screenshots/` using Robolectric native graphics.
 
 ## Strings
 
@@ -64,3 +64,7 @@ python3 tools/gen_strings.py
 ```
 
 The generator fails if format arguments differ between languages.
+
+## Continuous integration
+
+`.github/workflows/android.yml` runs on every push and pull request. It runs the tests, then lint, then builds the release APK and AAB, and uploads the reports, screenshots and release outputs as artifacts.

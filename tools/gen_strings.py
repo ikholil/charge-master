@@ -4,7 +4,7 @@ import os, re, sys
 from xml.sax.saxutils import escape
 here = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, here)
-from strings_table import S
+from strings_table import S, P
 root = os.path.dirname(here)
 
 def fmt_count(s):
@@ -21,9 +21,16 @@ def write(path, idx):
             raise SystemExit(f"format args mismatch for {k}")
         attrs = ' formatted="false"' if ('%' in text and not fmt_count(text)) else ''
         out.append(f'    <string name="{k}"{attrs}>{escape(text)}</string>')
+    for k, forms in P.items():
+        out.append(f'    <plurals name="{k}">')
+        for q, v in forms.items():
+            if fmt_count(v[0]) != fmt_count(v[1]):
+                raise SystemExit(f"format args mismatch for plural {k}")
+            out.append(f'        <item quantity="{q}">{escape(v[idx])}</item>')
+        out.append('    </plurals>')
     out.append('</resources>\n')
     open(path, 'w', encoding='utf-8').write('\n'.join(out))
 
 write(os.path.join(root, 'app/src/main/res/values/strings.xml'), 0)
 write(os.path.join(root, 'app/src/main/res/values-bn/strings.xml'), 1)
-print(f"wrote {len(S)} strings")
+print(f"wrote {len(S)} strings and {len(P)} plurals")

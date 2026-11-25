@@ -10,6 +10,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.activity.ComponentActivity
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.chargemaster.app.core.design.ChargeMasterTheme
+import com.chargemaster.app.domain.HOUR
 import com.chargemaster.app.domain.MIN
 import com.chargemaster.app.domain.engine.EstimateMethod
 import com.chargemaster.app.domain.engine.TimeEstimate
@@ -40,7 +41,19 @@ class ScreenshotTest {
         eta80 = TimeEstimate(4, EstimateMethod.OBSERVED_RATE),
     )
 
-    private fun shoot(name: String, theme: ThemeMode) {
+    private val onBattery = DashboardState(
+        snapshot = snapshot(10 * HOUR, level = 64, current = -420f, temp = 29.8f, voltage = 3870),
+        remaining = TimeEstimate(9 * 60 + 20, EstimateMethod.OBSERVED_RATE),
+        lastSession = com.chargemaster.app.domain.model.ChargingSession(
+            id = 1, startTime = 2 * HOUR, endTime = 3 * HOUR + 10 * MIN, lastSampleTime = 3 * HOUR + 5 * MIN,
+            startLevel = 22, endLevel = 81, source = ChargingSource.AC, sampleCount = 8, powerSampleCount = 8, powerSumW = 120.0,
+            peakPowerW = 24f, tempSampleCount = 8, tempSumC = 260.0, maxTempC = 35f, startTempC = 30f, endTempC = 34f,
+            interruptions = 0, startPrecise = true, endPrecise = true, hadMonitoringGap = false,
+            endReason = com.chargemaster.app.domain.model.SessionEndReason.UNPLUGGED,
+        ),
+    )
+
+    private fun shoot(name: String, theme: ThemeMode, state: DashboardState = this.state) {
         compose.setContent {
             ChargeMasterTheme(themeMode = theme, reduceMotion = true) {
                 Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) { DashboardContent(state) }
@@ -57,4 +70,5 @@ class ScreenshotTest {
     @Test @Config(qualifiers = "w400dp-h900dp-xhdpi") fun dashboardLight() = shoot("dashboard_light", ThemeMode.LIGHT)
     @Test @Config(qualifiers = "w400dp-h900dp-night-xhdpi") fun dashboardDark() = shoot("dashboard_dark", ThemeMode.DARK)
     @Test @Config(qualifiers = "bn-w400dp-h900dp-xhdpi") fun dashboardBangla() = shoot("dashboard_bn", ThemeMode.LIGHT)
+    @Test @Config(qualifiers = "w400dp-h1400dp-night-xhdpi") fun dashboardOnBattery() = shoot("dashboard_on_battery", ThemeMode.AMOLED, onBattery)
 }

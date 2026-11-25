@@ -4,4 +4,5 @@
     <exclude domain="database" path="charge_master.db" />
     <exclude domain="database" path="charge_master.db-wal" />
     <exclude domain="database" path="charge_master.db-shm" />
+    <exclude domain="file" path="datastore/charge_master_device_state.preferences_pb" />
 </full-backup-content>

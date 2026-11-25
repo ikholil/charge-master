@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class LiveChargingState(
@@ -118,6 +119,9 @@ class ChargingHistoryViewModel @Inject constructor(
 
 data class SessionDetailState(
     val session: ChargingSession? = null,
+    /** Average power of the user's other sessions on the same source (≥3 needed). */
+    val typicalPowerW: Float? = null,
+    val typicalPercentPerHour: Float? = null,
     val readings: List<BatteryReading> = emptyList(),
     val unit: TemperatureUnit = TemperatureUnit.CELSIUS,
     val capacity: CapacityEstimator.Estimate? = null,
@@ -129,15 +133,28 @@ data class SessionDetailState(
 class SessionDetailViewModel @Inject constructor(
     savedState: SavedStateHandle,
     private val battery: BatteryRepository,
-    sessions: SessionRepository,
+    private val sessions: SessionRepository,
     prefs: PreferencesRepository,
 ) : ViewModel() {
     private val id: Long = checkNotNull(savedState["id"])
 
     val state: StateFlow<SessionDetailState> = sessions.observeById(id).flatMapLatest { s ->
         if (s == null) flowOf(SessionDetailState(loaded = true))
-        else combine(battery.observeReadingsBetween(s.startTime, s.endTime ?: s.lastSampleTime), prefs.preferences) { r, p ->
-            SessionDetailState(s, r, p.temperatureUnit, CapacityEstimator.estimateFromReadings(r), loaded = true)
+        else combine(
+            battery.observeReadingsBetween(s.startTime, s.endTime ?: s.lastSampleTime), prefs.preferences, sessions.observeRecent(50),
+        ) { r, p, recent ->
+            val peers = recent.filter { it.id != s.id && !it.isOpen && it.source == s.source }
+            val peerPower = peers.mapNotNull { it.averagePowerW }
+            val peerRate = peers.filter { (it.levelGain ?: 0) >= 10 }.mapNotNull { it.percentPerHour }
+            SessionDetailState(
+                session = s,
+                typicalPowerW = peerPower.takeIf { it.size >= 3 }?.average()?.toFloat(),
+                typicalPercentPerHour = peerRate.takeIf { it.size >= 3 }?.average()?.toFloat(),
+                readings = r, unit = p.temperatureUnit,
+                capacity = CapacityEstimator.estimateFromReadings(r), loaded = true,
+            )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SessionDetailState())
+
+    fun delete(onDone: () -> Unit) = viewModelScope.launch { sessions.delete(id); onDone() }
 }

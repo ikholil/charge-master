@@ -8,6 +8,7 @@ import com.chargemaster.app.domain.model.BatterySnapshot
 import com.chargemaster.app.domain.model.CalibrationMode
 import com.chargemaster.app.domain.model.ChargingSession
 import com.chargemaster.app.domain.model.CurrentCalibration
+import com.chargemaster.app.domain.model.DashboardCard
 import com.chargemaster.app.domain.model.MonitoringMode
 import com.chargemaster.app.domain.model.TemperatureUnit
 import com.chargemaster.app.domain.model.ThemeMode
@@ -68,6 +69,7 @@ interface PreferencesRepository {
     suspend fun setCurrentUnitMode(mode: CalibrationMode)
     suspend fun setCurrentSignMode(mode: CalibrationMode)
     suspend fun updateAlerts(transform: (AlertPreferences) -> AlertPreferences)
+    suspend fun setDashboardCards(cards: Set<DashboardCard>)
 
     suspend fun calibration(): CurrentCalibration
     suspend fun setCalibration(calibration: CurrentCalibration)

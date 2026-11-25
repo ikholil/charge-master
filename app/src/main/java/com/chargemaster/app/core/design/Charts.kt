@@ -48,6 +48,8 @@ fun LineChart(
     thresholdColor: Color = Tokens.Danger,
     gapThreshold: Float? = null,
     showDots: Boolean = false,
+    /** Labels for the first and last x positions (e.g. start/end time). */
+    xLabels: Pair<String, String>? = null,
 ) {
     val measurer = rememberTextMeasurer()
     val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -65,7 +67,8 @@ fun LineChart(
         if (maxY == null) hi += pad
         val x0 = sorted.first().x; val x1 = sorted.last().x
         val xr = (x1 - x0).takeIf { it > 0f } ?: 1f
-        val leftPad = 36.dp.toPx(); val bottomPad = 4.dp.toPx(); val topPad = 6.dp.toPx()
+        val leftPad = 40.dp.toPx(); val topPad = 6.dp.toPx()
+        val bottomPad = if (xLabels != null) 18.dp.toPx() else 4.dp.toPx()
         val w = size.width - leftPad; val h = size.height - bottomPad - topPad
         fun px(p: ChartPoint) = Offset(leftPad + (p.x - x0) / xr * w, topPad + h - (p.y - lo) / (hi - lo) * h)
 
@@ -76,6 +79,12 @@ fun LineChart(
             drawLine(grid, Offset(leftPad, y), Offset(size.width, y), strokeWidth = 1f)
             val layout = measurer.measure(yLabel(v), labelStyle)
             drawText(layout, topLeft = Offset(0f, (y - layout.size.height / 2f).coerceIn(0f, size.height - layout.size.height)))
+        }
+        xLabels?.let { (first, last) ->
+            val a = measurer.measure(first, labelStyle)
+            val b = measurer.measure(last, labelStyle)
+            drawText(a, topLeft = Offset(leftPad, size.height - a.size.height))
+            drawText(b, topLeft = Offset(size.width - b.size.width, size.height - b.size.height))
         }
         threshold?.let { t ->
             val y = topPad + h - (t - lo) / (hi - lo) * h

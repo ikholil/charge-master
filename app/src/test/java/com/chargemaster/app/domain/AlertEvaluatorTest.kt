@@ -66,6 +66,17 @@ class AlertEvaluatorTest {
         assertTrue(a.contains(BatteryAlert.ChargingStopped(55)))
     }
 
+    @Test fun `unplugging after a completed charge is not an interruption`() {
+        val c = ChargingSource.AC
+        val a = run(listOf(snapshot(0, 90), snapshot(1, 99, c), snapshot(2, 100, c, status = ChargingStatus.FULL), snapshot(3, 100)))
+        assertTrue(a.none { it is BatteryAlert.ChargingStopped })
+    }
+
+    @Test fun `low battery does not re-fire after a brief plug-in at low level`() {
+        val a = run(listOf(snapshot(0, 19), snapshot(1, 19, ChargingSource.USB), snapshot(2, 19)), p = prefs.copy(chargingStartedEnabled = false, chargingStoppedEnabled = false))
+        assertEquals(1, a.count { it is BatteryAlert.LowBattery })
+    }
+
     @Test fun `first ever sample does not fire a plug transition`() {
         val a = run(listOf(snapshot(0, 50, ChargingSource.USB)))
         assertTrue(a.none { it is BatteryAlert.ChargingStarted })

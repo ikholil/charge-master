@@ -121,7 +121,6 @@
     <string name="charging_history">চার্জিং ইতিহাস</string>
     <string name="history_subtitle">সেশন, গতি ও উৎস তুলনা</string>
     <string name="charging_calendar">চার্জিং ক্যালেন্ডার</string>
-    <string name="sessions_count">এই সময়ে %1$dটি সেশন</string>
     <string name="average_duration">গড় সময়কাল</string>
     <string name="peak_observed_power">সর্বোচ্চ পর্যবেক্ষিত পাওয়ার</string>
     <string name="fastest_session">দ্রুততম সেশন</string>
@@ -156,15 +155,14 @@
     <string name="chart_live_power_desc">চার্জিং পাওয়ার চার্ট। সর্বনিম্ন %1$s, সর্বোচ্চ %2$s, সর্বশেষ %3$s।</string>
     <string name="chart_level_desc">ব্যাটারি লেভেল চার্ট, %1$s থেকে %2$s।</string>
     <string name="chart_temp_desc">তাপমাত্রা চার্ট। সর্বনিম্ন %1$s, সর্বোচ্চ %2$s ডিগ্রি।</string>
-    <string name="chart_sessions_per_day_desc">%2$d দিনে %1$dটি চার্জিং সেশনের বার চার্ট।</string>
-    <string name="chart_power_vs_level_desc">ব্যাটারি লেভেলের বিপরীতে %1$dটি পাওয়ার রিডিংয়ের স্ক্যাটার চার্ট।</string>
-    <string name="chart_temp_vs_power_desc">%1$dটি সেশনের স্ক্যাটার চার্ট: গড় তাপমাত্রা বনাম গড় পাওয়ার।</string>
-    <string name="chart_capacity_desc">%1$dটি পরিমাপে আনুমানিক ক্ষমতা, %2$s থেকে %3$s।</string>
+    <string name="chart_sessions_per_day_desc">প্রতিদিনের চার্জিং সেশন (মোট: %1$d, দেখানো দিন: %2$d)।</string>
+    <string name="chart_power_vs_level_desc">ব্যাটারি লেভেলের বিপরীতে চার্জিং পাওয়ারের স্ক্যাটার চার্ট (রিডিং: %1$d)।</string>
+    <string name="chart_temp_vs_power_desc">গড় তাপমাত্রা বনাম গড় পাওয়ারের স্ক্যাটার চার্ট (সেশন: %1$d)।</string>
+    <string name="chart_capacity_desc">আনুমানিক ক্ষমতা %2$s থেকে %3$s (পরিমাপ: %1$d)।</string>
     <string name="android_reported_status">অ্যান্ড্রয়েডের জানানো অবস্থা</string>
     <string name="android_status_explainer">এটি অ্যান্ড্রয়েডের কার্যকরী অবস্থা (যেমন ভালো বা অতিরিক্ত গরম)। এটি ব্যাটারি স্বাস্থ্যের শতাংশ নয়।</string>
     <string name="estimated_capacity">আনুমানিক পূর্ণ-চার্জ ক্ষমতা</string>
     <string name="capacity_method_explainer">কমপক্ষে %1$d%% ব্যাটারি লেভেল জুড়ে চার্জের সময় চার্জ কাউন্টার থেকে পরিমাপ করা হয়। কিছু ডিভাইস এই কাউন্টার লেভেল থেকেই হিসাব করে, যা নির্ভরযোগ্যতা কমায়।</string>
-    <string name="capacity_measurements">রেকর্ড করা পরিমাপ: %1$d</string>
     <string name="charge_counter_unsupported">এই ডিভাইস চার্জ কাউন্টার জানায় না, তাই ক্ষমতা পরিমাপ করা যায় না।</string>
     <string name="estimated_health">আনুমানিক ব্যাটারি স্বাস্থ্য</string>
     <string name="health_needs_design">তুলনার জন্য আপনার ব্যাটারির ডিজাইন ক্ষমতা (প্রস্তুতকারকের স্পেসিফিকেশন থেকে) দিন। অ্যান্ড্রয়েড পাবলিক API-তে এটি দেয় না।</string>
@@ -193,7 +191,6 @@
     <string name="charging_max">চার্জিংয়ের সময় সর্বোচ্চ</string>
     <string name="discharging_average">ব্যাটারিতে চলার সময় গড়</string>
     <string name="discharging_max">ব্যাটারিতে চলার সময় সর্বোচ্চ</string>
-    <string name="samples_count">%1$dটি নমুনা</string>
     <string name="temperature_explainer">এটি ব্যাটারি সেন্সরের তাপমাত্রা, সিপিইউ বা ঘরের তাপমাত্রা নয়। দ্রুত চার্জিং বা গেমিংয়ের সময় সাময়িক উষ্ণতা স্বাভাবিক; একটি রিডিং ক্ষতির প্রমাণ নয়।</string>
     <string name="insights">বিশ্লেষণ</string>
     <string name="battery_timeline">ব্যাটারি টাইমলাইন</string>
@@ -265,7 +262,6 @@
     <string name="auto_detect">স্বয়ংক্রিয় শনাক্ত</string>
     <string name="reset_detection">স্বয়ংক্রিয় শনাক্তকরণ রিসেট করুন</string>
     <string name="data">ডেটা</string>
-    <string name="retention_days">%1$d দিন রিডিং রাখুন</string>
     <string name="retention_desc">চার্জিং সেশন কাঁচা রিডিংয়ের চেয়ে বেশি দিন রাখা হয়। সব ডেটা এই ডিভাইসেই থাকে।</string>
     <string name="clear_history">সব ইতিহাস মুছুন</string>
     <string name="clear_history_confirm">সব রিডিং, সেশন ও ক্ষমতার পরিমাপ মুছে ফেলবেন? এটি ফেরানো যাবে না।</string>
@@ -349,4 +345,53 @@
     <string name="widget_minimal_label">ব্যাটারি · মিনিমাল</string>
     <string name="widget_detailed_label">ব্যাটারি · বিস্তারিত</string>
     <string name="widget_charging_label">ব্যাটারি · চার্জিং</string>
+    <string name="now">এখন</string>
+    <string name="last_charge">শেষ চার্জ</string>
+    <string name="last_charge_detail">সময় লেগেছে %1$s · %2$s আগে খোলা হয়েছে</string>
+    <string name="quick_temperature_subtitle">ইতিহাস ও প্রবণতা</string>
+    <string name="quick_health_subtitle">ক্ষমতা ও ক্ষয়</string>
+    <string name="delete_session">সেশন মুছুন</string>
+    <string name="delete_session_confirm">এই চার্জিং সেশনটি ইতিহাস থেকে মুছে ফেলবেন? এটি ফেরানো যাবে না।</string>
+    <string name="compared_to_usual">%1$s-এ আপনার সাধারণ মানের সঙ্গে তুলনা</string>
+    <string name="usual_value">সাধারণত %1$s</string>
+    <string name="chart_voltage_desc">ভোল্টেজ চার্ট। সর্বনিম্ন %1$s, সর্বোচ্চ %2$s ভোল্ট।</string>
+    <string name="vs_7day_average">৭ দিনের গড়: %1$s</string>
+    <string name="habit_score">চার্জিং অভ্যাস স্কোর</string>
+    <string name="habit_needs_sessions">গত ৩০ দিনে কমপক্ষে %1$dটি সম্পূর্ণ চার্জিং সেশন প্রয়োজন (রেকর্ড হয়েছে: %2$d)।</string>
+    <string name="habit_great">চমৎকার অভ্যাস</string>
+    <string name="habit_good">ভালো অভ্যাস</string>
+    <string name="habit_room">উন্নতির সুযোগ আছে</string>
+    <string name="habit_target">চার্জ লক্ষ্যের কাছাকাছি থেমেছেন</string>
+    <string name="habit_deep">ব্যাটারি কমে যাওয়ার আগেই প্লাগ দিয়েছেন</string>
+    <string name="habit_cool">তাপমাত্রার সীমার নিচে ছিল</string>
+    <string name="habit_long">অতিরিক্ত দীর্ঘ চার্জিং এড়িয়েছেন</string>
+    <string name="habit_explainer">আপনার নিজের সতর্কতার সীমা ও প্রচলিত লিথিয়াম-আয়ন নির্দেশনার ভিত্তিতে। এটি অভ্যাস বোঝায়, ব্যাটারির স্বাস্থ্য নয়।</string>
+    <string name="language">ভাষা</string>
+    <string name="language_system">সিস্টেম ডিফল্ট</string>
+    <string name="dashboard_cards">ড্যাশবোর্ড কার্ড</string>
+    <string name="dashboard_cards_desc">সারসংক্ষেপ স্ক্রিনে কী দেখাবে তা বেছে নিন।</string>
+    <string name="card_estimate">সময়ের অনুমান</string>
+    <string name="card_quick_links">দ্রুত লিংক</string>
+    <string name="copy">কপি</string>
+    <string name="copied">ক্লিপবোর্ডে কপি হয়েছে</string>
+    <plurals name="sessions_count">
+        <item quantity="one">এই সময়ে %1$dটি সেশন</item>
+        <item quantity="other">এই সময়ে %1$dটি সেশন</item>
+    </plurals>
+    <plurals name="samples_count">
+        <item quantity="one">%1$dটি নমুনা</item>
+        <item quantity="other">%1$dটি নমুনা</item>
+    </plurals>
+    <plurals name="capacity_measurements">
+        <item quantity="one">%1$dটি পরিমাপ রেকর্ড হয়েছে</item>
+        <item quantity="other">%1$dটি পরিমাপ রেকর্ড হয়েছে</item>
+    </plurals>
+    <plurals name="retention_days">
+        <item quantity="one">%1$d দিন রিডিং রাখুন</item>
+        <item quantity="other">%1$d দিন রিডিং রাখুন</item>
+    </plurals>
+    <plurals name="habit_based_on">
+        <item quantity="one">গত ৩০ দিনের %1$dটি সেশনের ভিত্তিতে</item>
+        <item quantity="other">গত ৩০ দিনের %1$dটি সেশনের ভিত্তিতে</item>
+    </plurals>
 </resources>

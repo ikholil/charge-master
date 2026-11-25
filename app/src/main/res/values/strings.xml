@@ -121,7 +121,6 @@
     <string name="charging_history">Charging history</string>
     <string name="history_subtitle">Sessions, speed and source comparison</string>
     <string name="charging_calendar">Charging calendar</string>
-    <string name="sessions_count">%1$d sessions in this period</string>
     <string name="average_duration">Average duration</string>
     <string name="peak_observed_power">Peak observed power</string>
     <string name="fastest_session">Fastest session</string>
@@ -156,15 +155,14 @@
     <string name="chart_live_power_desc">Charging power chart. Minimum %1$s, maximum %2$s, latest %3$s.</string>
     <string name="chart_level_desc">Battery level chart from %1$s to %2$s.</string>
     <string name="chart_temp_desc">Temperature chart. Minimum %1$s, maximum %2$s degrees.</string>
-    <string name="chart_sessions_per_day_desc">Bar chart of %1$d charging sessions across %2$d days.</string>
-    <string name="chart_power_vs_level_desc">Scatter plot of %1$d power readings against battery level.</string>
-    <string name="chart_temp_vs_power_desc">Scatter plot of %1$d sessions: average temperature against average power.</string>
-    <string name="chart_capacity_desc">Estimated capacity over %1$d measurements, from %2$s to %3$s.</string>
+    <string name="chart_sessions_per_day_desc">Charging sessions per day (total: %1$d, days shown: %2$d).</string>
+    <string name="chart_power_vs_level_desc">Scatter plot of charging power against battery level (readings: %1$d).</string>
+    <string name="chart_temp_vs_power_desc">Scatter plot of average temperature against average power (sessions: %1$d).</string>
+    <string name="chart_capacity_desc">Estimated capacity from %2$s to %3$s (measurements: %1$d).</string>
     <string name="android_reported_status">Android-reported condition</string>
     <string name="android_status_explainer">This is Android\'s operational status (for example Good or Overheating). It is not a battery health percentage.</string>
     <string name="estimated_capacity">Estimated full-charge capacity</string>
     <string name="capacity_method_explainer">Measured from the charge counter across charges that span at least %1$d%% of battery level. Some devices derive this counter from the level itself, which lowers confidence.</string>
-    <string name="capacity_measurements">Measurements recorded: %1$d</string>
     <string name="charge_counter_unsupported">This device does not expose a charge counter, so capacity cannot be measured.</string>
     <string name="estimated_health">Estimated battery health</string>
     <string name="health_needs_design">Enter your battery\'s design capacity (from the manufacturer\'s specifications) to compare. Android does not provide it through public APIs.</string>
@@ -193,7 +191,6 @@
     <string name="charging_max">Maximum while charging</string>
     <string name="discharging_average">Average on battery</string>
     <string name="discharging_max">Maximum on battery</string>
-    <string name="samples_count">%1$d samples</string>
     <string name="temperature_explainer">This is the battery sensor temperature, not CPU or room temperature. Brief warm readings during fast charging or gaming are normal; a single reading does not indicate damage.</string>
     <string name="insights">Insights</string>
     <string name="battery_timeline">Battery timeline</string>
@@ -265,7 +262,6 @@
     <string name="auto_detect">Auto-detect</string>
     <string name="reset_detection">Reset auto-detection</string>
     <string name="data">Data</string>
-    <string name="retention_days">Keep readings for %1$d days</string>
     <string name="retention_desc">Charging sessions are kept longer than raw readings. All data stays on this device.</string>
     <string name="clear_history">Clear all history</string>
     <string name="clear_history_confirm">Delete all readings, sessions and capacity measurements? This cannot be undone.</string>
@@ -349,4 +345,53 @@
     <string name="widget_minimal_label">Battery · Minimal</string>
     <string name="widget_detailed_label">Battery · Detailed</string>
     <string name="widget_charging_label">Battery · Charging</string>
+    <string name="now">Now</string>
+    <string name="last_charge">Last charge</string>
+    <string name="last_charge_detail">Took %1$s · unplugged %2$s ago</string>
+    <string name="quick_temperature_subtitle">History &amp; trends</string>
+    <string name="quick_health_subtitle">Capacity &amp; wear</string>
+    <string name="delete_session">Delete session</string>
+    <string name="delete_session_confirm">Delete this charging session from your history? This cannot be undone.</string>
+    <string name="compared_to_usual">Compared with your usual on %1$s</string>
+    <string name="usual_value">usual %1$s</string>
+    <string name="chart_voltage_desc">Voltage chart. Minimum %1$s, maximum %2$s volts.</string>
+    <string name="vs_7day_average">7-day average: %1$s</string>
+    <string name="habit_score">Charging habit score</string>
+    <string name="habit_needs_sessions">Needs at least %1$d completed charging sessions in the last 30 days (recorded: %2$d).</string>
+    <string name="habit_great">Great habits</string>
+    <string name="habit_good">Good habits</string>
+    <string name="habit_room">Room to improve</string>
+    <string name="habit_target">Stopped near your charge target</string>
+    <string name="habit_deep">Plugged in before low battery</string>
+    <string name="habit_cool">Stayed below your temperature limit</string>
+    <string name="habit_long">Avoided very long charging sessions</string>
+    <string name="habit_explainer">Based on your own alert thresholds and commonly cited lithium-ion guidance. It describes habits, not battery health.</string>
+    <string name="language">Language</string>
+    <string name="language_system">System default</string>
+    <string name="dashboard_cards">Dashboard cards</string>
+    <string name="dashboard_cards_desc">Choose what the Overview screen shows.</string>
+    <string name="card_estimate">Time estimates</string>
+    <string name="card_quick_links">Quick links</string>
+    <string name="copy">Copy</string>
+    <string name="copied">Copied to clipboard</string>
+    <plurals name="sessions_count">
+        <item quantity="one">%1$d session in this period</item>
+        <item quantity="other">%1$d sessions in this period</item>
+    </plurals>
+    <plurals name="samples_count">
+        <item quantity="one">%1$d sample</item>
+        <item quantity="other">%1$d samples</item>
+    </plurals>
+    <plurals name="capacity_measurements">
+        <item quantity="one">%1$d measurement recorded</item>
+        <item quantity="other">%1$d measurements recorded</item>
+    </plurals>
+    <plurals name="retention_days">
+        <item quantity="one">Keep readings for %1$d day</item>
+        <item quantity="other">Keep readings for %1$d days</item>
+    </plurals>
+    <plurals name="habit_based_on">
+        <item quantity="one">Based on %1$d session in the last 30 days</item>
+        <item quantity="other">Based on %1$d sessions in the last 30 days</item>
+    </plurals>
 </resources>

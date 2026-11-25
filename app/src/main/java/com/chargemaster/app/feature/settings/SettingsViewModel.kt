@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.chargemaster.app.domain.model.AlertPreferences
 import com.chargemaster.app.domain.model.CalibrationMode
 import com.chargemaster.app.domain.model.CurrentCalibration
+import com.chargemaster.app.domain.model.DashboardCard
 import com.chargemaster.app.domain.model.MonitoringMode
 import com.chargemaster.app.domain.model.TemperatureUnit
 import com.chargemaster.app.domain.model.ThemeMode
@@ -43,4 +44,8 @@ class SettingsViewModel @Inject constructor(
     fun updateAlerts(t: (AlertPreferences) -> AlertPreferences) = go { prefs.updateAlerts(t) }
     fun clearData() = go { clearAll() }
     fun completeOnboarding() = go { prefs.setOnboardingComplete(true) }
+    fun toggleCard(card: DashboardCard, visible: Boolean) = go {
+        val current = preferences.value.dashboardCards
+        prefs.setDashboardCards(if (visible) current + card else current - card)
+    }
 }

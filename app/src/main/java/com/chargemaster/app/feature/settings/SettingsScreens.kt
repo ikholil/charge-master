@@ -29,7 +29,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
+import com.chargemaster.app.domain.model.DashboardCard
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -84,6 +88,32 @@ fun SettingsScreen(
         }
         item {
             AppCard {
+                SectionHeader(stringResource(R.string.language))
+                val current = AppCompatDelegate.getApplicationLocales().toLanguageTags().substringBefore('-').ifEmpty { "" }
+                var selected by rememberSaveable { mutableStateOf(current) }
+                RadioGroup(
+                    listOf("", "en", "bn"), selected,
+                    label = { tag -> when (tag) { "en" -> "English"; "bn" -> "বাংলা"; else -> stringResource(R.string.language_system) } },
+                    onSelect = { tag ->
+                        selected = tag
+                        AppCompatDelegate.setApplicationLocales(
+                            if (tag.isEmpty()) LocaleListCompat.getEmptyLocaleList() else LocaleListCompat.forLanguageTags(tag),
+                        )
+                    },
+                )
+            }
+        }
+        item {
+            AppCard {
+                SectionHeader(stringResource(R.string.dashboard_cards))
+                Text(stringResource(R.string.dashboard_cards_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                DashboardCard.entries.forEach { card ->
+                    SwitchRow(stringResource(card.labelRes()), null, card in p.dashboardCards) { vm.toggleCard(card, it) }
+                }
+            }
+        }
+        item {
+            AppCard {
                 SectionHeader(stringResource(R.string.units))
                 RadioGroup(
                     TemperatureUnit.entries, p.temperatureUnit,
@@ -132,7 +162,7 @@ fun SettingsScreen(
                 SectionHeader(stringResource(R.string.data))
                 val options = listOf(7, 30, 90, 365)
                 RadioGroup(options, p.retentionDays.takeIf { it in options } ?: 30,
-                    label = { stringResource(R.string.retention_days, it) }, onSelect = vm::setRetention)
+                    label = { pluralStringResource(R.plurals.retention_days, it, it) }, onSelect = vm::setRetention)
                 Text(stringResource(R.string.retention_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(8.dp))
                 OutlinedButton(onClick = { confirmClear = true }) { Text(stringResource(R.string.clear_history)) }
@@ -150,6 +180,18 @@ fun SettingsScreen(
         confirmButton = { TextButton(onClick = { vm.clearData(); confirmClear = false }) { Text(stringResource(R.string.delete)) } },
         dismissButton = { TextButton(onClick = { confirmClear = false }) { Text(stringResource(R.string.cancel)) } },
     )
+}
+
+private fun DashboardCard.labelRes() = when (this) {
+    DashboardCard.ESTIMATE -> R.string.card_estimate
+    DashboardCard.TEMPERATURE -> R.string.metric_temperature
+    DashboardCard.VOLTAGE -> R.string.metric_voltage
+    DashboardCard.POWER -> R.string.metric_power
+    DashboardCard.CURRENT -> R.string.metric_current
+    DashboardCard.ANDROID_HEALTH -> R.string.metric_android_health
+    DashboardCard.THERMAL -> R.string.metric_thermal
+    DashboardCard.LAST_CHARGE -> R.string.last_charge
+    DashboardCard.QUICK_LINKS -> R.string.card_quick_links
 }
 
 @Composable

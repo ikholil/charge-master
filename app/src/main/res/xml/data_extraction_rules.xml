@@ -4,8 +4,10 @@
         <exclude domain="database" path="charge_master.db" />
         <exclude domain="database" path="charge_master.db-wal" />
         <exclude domain="database" path="charge_master.db-shm" />
+        <exclude domain="file" path="datastore/charge_master_device_state.preferences_pb" />
     </cloud-backup>
     <device-transfer>
         <exclude domain="database" path="charge_master.db" />
+        <exclude domain="file" path="datastore/charge_master_device_state.preferences_pb" />
     </device-transfer>
 </data-extraction-rules>

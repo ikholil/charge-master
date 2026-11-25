@@ -18,6 +18,9 @@ data class AlertPreferences(
     val unusualSpeedEnabled: Boolean = true,
 )
 
+/** Optional dashboard sections the user can show or hide (adaptive dashboard). */
+enum class DashboardCard { ESTIMATE, TEMPERATURE, VOLTAGE, POWER, CURRENT, ANDROID_HEALTH, THERMAL, LAST_CHARGE, QUICK_LINKS }
+
 data class UserPreferences(
     val onboardingComplete: Boolean = false,
     val temperatureUnit: TemperatureUnit = TemperatureUnit.CELSIUS,
@@ -33,6 +36,7 @@ data class UserPreferences(
     val currentUnitMode: CalibrationMode = CalibrationMode.AUTO,
     val currentSignMode: CalibrationMode = CalibrationMode.AUTO,
     val alerts: AlertPreferences = AlertPreferences(),
+    val dashboardCards: Set<DashboardCard> = DashboardCard.entries.toSet(),
 )
 
 /** What the app has learned about how this device reports current. */

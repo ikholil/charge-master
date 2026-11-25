@@ -1,6 +1,8 @@
 package com.chargemaster.app.app
 
 import android.app.Application
+import android.os.StrictMode
+import com.chargemaster.app.BuildConfig
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.chargemaster.app.core.common.ApplicationScope
@@ -28,6 +30,11 @@ class ChargeMasterApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        if (BuildConfig.DEBUG) {
+            // Surface accidental disk/network work on the main thread during development.
+            StrictMode.setThreadPolicy(StrictMode.ThreadPolicy.Builder().detectDiskWrites().detectNetwork().penaltyLog().build())
+            StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder().detectLeakedClosableObjects().detectLeakedSqlLiteObjects().penaltyLog().build())
+        }
         NotificationChannels.create(this)
         foregroundMonitor.install()
         // Re-apply background scheduling whenever the relevant settings change.

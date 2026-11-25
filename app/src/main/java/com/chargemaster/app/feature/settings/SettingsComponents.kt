@@ -19,14 +19,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.Role
+import android.view.HapticFeedbackConstants
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
 @Composable
 fun SwitchRow(title: String, subtitle: String? = null, checked: Boolean, onChange: (Boolean) -> Unit) {
+    val view = LocalView.current
     Row(
-        Modifier.fillMaxWidth().toggleable(checked, role = Role.Switch, onValueChange = onChange).padding(vertical = 10.dp),
+        Modifier.fillMaxWidth().toggleable(checked, role = Role.Switch, onValueChange = {
+            view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+            onChange(it)
+        }).padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {

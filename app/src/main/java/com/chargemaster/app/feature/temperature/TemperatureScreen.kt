@@ -12,7 +12,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import com.chargemaster.app.core.design.dateTimeText
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -103,13 +105,15 @@ fun TemperatureScreen(onBack: () -> Unit, vm: TemperatureViewModel = hiltViewMod
         item {
             AppCard {
                 SectionHeader(stringResource(R.string.temperature_history))
-                val pts = st.readings.mapNotNull { r -> r.temperatureC?.let { ChartPoint(r.timestamp / 3_600_000f, TemperatureConverter.fromCelsius(it, u)) } }
+                val origin = st.readings.firstOrNull()?.timestamp ?: 0L
+                val pts = st.readings.mapNotNull { r -> r.temperatureC?.let { ChartPoint((r.timestamp - origin) / 3_600_000f, TemperatureConverter.fromCelsius(it, u)) } }
+                val span = st.readings.firstOrNull()?.let { dateTimeText(it.timestamp) to dateTimeText(st.readings.last().timestamp) }
                 if (pts.size < 2) Text(stringResource(R.string.not_enough_samples), style = MaterialTheme.typography.bodyMedium)
                 else LineChart(
                     pts,
                     stringResource(R.string.chart_temp_desc, Fmt.decimal1(pts.minOf { it.y }), Fmt.decimal1(pts.maxOf { it.y })),
                     color = Tokens.Warning, yLabel = { Fmt.decimal1(it) + "°" },
-                    threshold = TemperatureConverter.fromCelsius(st.thresholdC, u), gapThreshold = 1.5f,
+                    threshold = TemperatureConverter.fromCelsius(st.thresholdC, u), gapThreshold = 1.5f, xLabels = span,
                 )
             }
         }
@@ -125,7 +129,7 @@ fun TemperatureScreen(onBack: () -> Unit, vm: TemperatureViewModel = hiltViewMod
                     KeyValueRow(stringResource(R.string.discharging_average), t(s.dischargingAverage), kind = ValueKind.HISTORICAL)
                     KeyValueRow(stringResource(R.string.discharging_max), t(s.dischargingMax), kind = ValueKind.HISTORICAL)
                     Spacer(Modifier.height(4.dp))
-                    Text(stringResource(R.string.samples_count, s.sampleCount), style = MaterialTheme.typography.bodySmall,
+                    Text(pluralStringResource(R.plurals.samples_count, s.sampleCount, s.sampleCount), style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }

@@ -10,6 +10,9 @@
 
 ## Build
 - [x] R8 minification and resource shrinking
+- [x] CI: tests, lint and release build on every push (`.github/workflows/android.yml`)
+- [x] Predictive back enabled (`enableOnBackInvokedCallback`)
+- [x] StrictMode enabled in debug builds
 - [x] `bundleRelease` produces an AAB
 - [ ] Create the upload key and `keystore.properties`; enroll in Play App Signing
 - [ ] Bump `versionCode` / `versionName`
