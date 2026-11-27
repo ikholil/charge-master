@@ -374,6 +374,57 @@
     <string name="card_quick_links">দ্রুত লিংক</string>
     <string name="copy">কপি</string>
     <string name="copied">ক্লিপবোর্ডে কপি হয়েছে</string>
+    <string name="speed_trickle">ট্রিকল চার্জিং</string>
+    <string name="speed_slow">ধীর চার্জিং</string>
+    <string name="speed_standard">সাধারণ চার্জিং</string>
+    <string name="speed_fast">দ্রুত চার্জিং</string>
+    <string name="speed_super_fast">অতি দ্রুত চার্জিং</string>
+    <string name="speed_tier">চার্জিংয়ের গতি</string>
+    <string name="speed_tier_note">পরিমাপ করা পাওয়ার থেকে আনুমানিক। ব্যাটারি ভরতে থাকলে বা গরম হলে পাওয়ার স্বাভাবিকভাবেই কমে।</string>
+    <string name="temperature_zone">তাপমাত্রার অঞ্চল</string>
+    <string name="zone_cold">ঠান্ডা</string>
+    <string name="zone_ideal">আদর্শ</string>
+    <string name="zone_warm">উষ্ণ</string>
+    <string name="zone_hot">গরম</string>
+    <string name="zone_critical">অতিরিক্ত গরম</string>
+    <string name="zone_cold_desc">১০ °C-এর নিচে চার্জিং ধীর হয় এবং ব্যাটারির ওপর চাপ পড়তে পারে। চার্জের আগে ফোনটি একটু গরম হতে দিন।</string>
+    <string name="zone_ideal_desc">চার্জিং ও দৈনন্দিন ব্যবহারের জন্য স্বস্তিদায়ক সীমা।</string>
+    <string name="zone_warm_desc">কিছুটা উষ্ণ। চার্জের সময় ভারী ব্যবহার এড়িয়ে চলুন।</string>
+    <string name="zone_hot_desc">গরম। কভার খুলে ফেলুন, গেম বন্ধ রাখুন বা চার্জার খুলে ঠান্ডা হতে দিন।</string>
+    <string name="zone_critical_desc">অত্যন্ত গরম। চার্জিং বন্ধ করুন এবং ছায়াযুক্ত জায়গায় ফোনটি ঠান্ডা হতে দিন।</string>
+    <string name="since_unplug">শেষ চার্জের পর থেকে</string>
+    <string name="on_battery_for">ব্যাটারিতে চলছে</string>
+    <string name="used_since">ব্যবহৃত</string>
+    <string name="drain_rate">খরচের হার</string>
+    <string name="since_unplug_charged_to">%1$s পর্যন্ত চার্জ হয়েছিল, %2$s আগে</string>
+    <string name="tips_title">ব্যাটারি যত্নের টিপস</string>
+    <string name="tips_subtitle">দীর্ঘস্থায়ী ব্যাটারির জন্য সহজ অভ্যাস</string>
+    <string name="tips_intro">সময়, তাপ ও পূর্ণ চার্জ চক্রের সঙ্গে লিথিয়াম-আয়ন ব্যাটারি ক্ষয় হয়। এই অভ্যাসগুলো ফোন ব্যবহারের ধরন না বদলেই সেই ক্ষয় ধীর করে।</string>
+    <string name="tip_of_day">আজকের টিপ</string>
+    <string name="quick_tips_subtitle">যত্নের নির্দেশিকা</string>
+    <string name="tip_1_title" formatted="false">২০% থেকে ৮০%-এর মধ্যে রাখুন</string>
+    <string name="tip_1_body" formatted="false">লিথিয়াম-আয়ন সেল মাঝামাঝি চার্জে সবচেয়ে ধীরে পুরোনো হয়। বারবার অল্প চার্জ দেওয়া ঠিক আছে; পুরো খালি করা বা দীর্ঘক্ষণ ১০০%-এ রাখা নয়।</string>
+    <string name="tip_2_title">ঠান্ডা রাখুন</string>
+    <string name="tip_2_body">ব্যাটারি ক্ষয়ের সবচেয়ে বড় কারণ তাপ। সরাসরি রোদে, বালিশের ওপর বা গরম গাড়িতে চার্জ দেবেন না।</string>
+    <string name="tip_3_title">দ্রুত চার্জের সময় মোটা কভার খুলুন</string>
+    <string name="tip_3_body">কভার তাপ আটকে রাখে। চার্জের সময় ফোন গরম লাগলে কভার খুলে ফেলুন।</string>
+    <string name="tip_4_title">ভালো চার্জার ও কেবল ব্যবহার করুন</string>
+    <string name="tip_4_body">সার্টিফায়েড চার্জার ও কেবল স্থিতিশীল পাওয়ার দেয় এবং নিরাপদে দ্রুত চার্জিং চালু করে।</string>
+    <string name="tip_5_title">অ্যাডাপটিভ চার্জিং চালু করুন</string>
+    <string name="tip_5_body" formatted="false">আপনার ফোনে অ্যাডাপটিভ বা অপটিমাইজড চার্জিং থাকলে চালু করুন, যাতে সারা রাত ১০০%-এ না থেকে খোলার ঠিক আগে পূর্ণ হয়।</string>
+    <string name="tip_6_title">চার্জের সময় গেম খেলা এড়িয়ে চলুন</string>
+    <string name="tip_6_body">চার্জের সময় ভারী ব্যবহারে চার্জিংয়ের তাপের সঙ্গে প্রসেসরের তাপও যোগ হয়।</string>
+    <string name="tip_7_title">অর্ধেক চার্জে সংরক্ষণ করুন</string>
+    <string name="tip_7_body" formatted="false">কয়েক সপ্তাহের বেশি রেখে দিলে ব্যাটারি প্রায় ৫০%-এ রাখুন, ডিভাইস বন্ধ করুন এবং ঠান্ডা জায়গায় রাখুন।</string>
+    <string name="tip_8_title">সফটওয়্যার হালনাগাদ রাখুন</string>
+    <string name="tip_8_body">সিস্টেম আপডেটে প্রায়ই ব্যাটারি ও চার্জিংয়ের উন্নতি থাকে।</string>
+    <string name="export_csv">চার্জিং ইতিহাস এক্সপোর্ট</string>
+    <string name="export_csv_desc">রেকর্ড করা সব চার্জিং সেশন CSV স্প্রেডশিট হিসেবে সংরক্ষণ করুন।</string>
+    <string name="export_done">চার্জিং ইতিহাস এক্সপোর্ট হয়েছে</string>
+    <string name="export_failed">এক্সপোর্ট ব্যর্থ হয়েছে</string>
+    <string name="export_empty">এক্সপোর্ট করার মতো কোনো চার্জিং সেশন এখনও নেই</string>
+    <string name="general">সাধারণ</string>
+    <string name="about">সম্পর্কে</string>
     <plurals name="sessions_count">
         <item quantity="one">এই সময়ে %1$dটি সেশন</item>
         <item quantity="other">এই সময়ে %1$dটি সেশন</item>

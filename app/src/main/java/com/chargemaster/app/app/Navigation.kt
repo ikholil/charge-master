@@ -1,7 +1,11 @@
 package com.chargemaster.app.app
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BatteryChargingFull
@@ -42,6 +46,7 @@ import com.chargemaster.app.feature.settings.PrivacyScreen
 import com.chargemaster.app.feature.settings.SettingsScreen
 import com.chargemaster.app.feature.settings.WidgetsScreen
 import com.chargemaster.app.feature.temperature.TemperatureScreen
+import com.chargemaster.app.feature.tips.TipsScreen
 
 object Routes {
     const val ONBOARDING = "onboarding"
@@ -59,6 +64,7 @@ object Routes {
     const val WIDGETS = "widgets"
     const val NOTIFICATIONS = "notifications"
     const val PRIVACY = "privacy"
+    const val TIPS = "tips"
 }
 
 private enum class TopLevel(val route: String, @StringRes val label: Int, val icon: ImageVector) {
@@ -75,8 +81,15 @@ fun ChargeMasterNavHost(startOnboarding: Boolean, nav: NavHostController = remem
     val current = backStack?.destination?.route
     val showBar = TopLevel.entries.any { it.route == current }
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        // Screens own their insets; the root only reserves room for the bottom bar. Previously the
+        // root consumed the status-bar inset too, so inner top bars drew underneath it.
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
-            if (showBar) NavigationBar {
+            if (showBar) NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                tonalElevation = 0.dp,
+            ) {
                 TopLevel.entries.forEach { item ->
                     NavigationBarItem(
                         selected = current == item.route,
@@ -88,7 +101,12 @@ fun ChargeMasterNavHost(startOnboarding: Boolean, nav: NavHostController = remem
                             }
                         },
                         icon = { Icon(item.icon, null) },
-                        label = { Text(stringResource(item.label)) },
+                        label = { Text(stringResource(item.label), maxLines = 1) },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            selectedTextColor = MaterialTheme.colorScheme.onSurface,
+                        ),
                     )
                 }
             }
@@ -97,8 +115,9 @@ fun ChargeMasterNavHost(startOnboarding: Boolean, nav: NavHostController = remem
         NavHost(
             navController = nav,
             startDestination = if (startOnboarding) Routes.ONBOARDING else Routes.OVERVIEW,
-            // Consume the bar's insets so inner screens don't pad for the navigation bar twice.
-            modifier = Modifier.padding(bottom = padding.calculateBottomPadding()).consumeWindowInsets(padding),
+            // Only the bottom bar's height is consumed, so inner screens still pad for the status bar
+            // and cutouts, and for the navigation bar when the bottom bar is hidden.
+            modifier = Modifier.padding(padding).consumeWindowInsets(padding),
         ) {
             val back: () -> Unit = { nav.popBackStack() }
             composable(Routes.ONBOARDING) {
@@ -111,6 +130,7 @@ fun ChargeMasterNavHost(startOnboarding: Boolean, nav: NavHostController = remem
                     onOpenCharging = { nav.navigate(Routes.CHARGING) { launchSingleTop = true } },
                     onOpenTemperature = { nav.navigate(Routes.TEMPERATURE) },
                     onOpenHealth = { nav.navigate(Routes.HEALTH) { launchSingleTop = true } },
+                    onOpenTips = { nav.navigate(Routes.TIPS) },
                 )
             }
             composable(Routes.CHARGING) {
@@ -121,13 +141,18 @@ fun ChargeMasterNavHost(startOnboarding: Boolean, nav: NavHostController = remem
                 SessionDetailScreen(onBack = back)
             }
             composable(Routes.HEALTH) {
-                HealthScreen(onOpenDiagnostics = { nav.navigate(Routes.DIAGNOSTICS) }, onOpenTemperature = { nav.navigate(Routes.TEMPERATURE) })
+                HealthScreen(
+                    onOpenDiagnostics = { nav.navigate(Routes.DIAGNOSTICS) },
+                    onOpenTemperature = { nav.navigate(Routes.TEMPERATURE) },
+                    onOpenTips = { nav.navigate(Routes.TIPS) },
+                )
             }
             composable(Routes.INSIGHTS) {
                 InsightsScreen(
                     onOpenTemperature = { nav.navigate(Routes.TEMPERATURE) },
                     onOpenHistory = { nav.navigate(Routes.HISTORY) },
                     onOpenReport = { nav.navigate(Routes.REPORT) },
+                    onOpenTips = { nav.navigate(Routes.TIPS) },
                 )
             }
             composable(Routes.TEMPERATURE) { TemperatureScreen(onBack = back) }
@@ -144,6 +169,7 @@ fun ChargeMasterNavHost(startOnboarding: Boolean, nav: NavHostController = remem
             composable(Routes.NOTIFICATIONS) { NotificationSettingsScreen(onBack = back) }
             composable(Routes.WIDGETS) { WidgetsScreen(onBack = back) }
             composable(Routes.PRIVACY) { PrivacyScreen(onBack = back) }
+            composable(Routes.TIPS) { TipsScreen(onBack = back) }
         }
     }
 }

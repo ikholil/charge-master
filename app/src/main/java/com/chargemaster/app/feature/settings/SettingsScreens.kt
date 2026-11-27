@@ -9,7 +9,27 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import android.widget.Toast
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material.icons.outlined.FileDownload
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Key
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.Storage
+import androidx.compose.material.icons.outlined.ToggleOn
+import androidx.compose.material.icons.outlined.WifiOff
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.ui.text.style.TextAlign
+import com.chargemaster.app.core.design.CardHeader
+import com.chargemaster.app.core.design.Tokens
+import java.time.LocalDate
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MonitorHeart
@@ -44,7 +64,6 @@ import com.chargemaster.app.core.design.AppCard
 import com.chargemaster.app.core.design.InfoBanner
 import com.chargemaster.app.core.design.NavRow
 import com.chargemaster.app.core.design.ScreenScaffold
-import com.chargemaster.app.core.design.SectionHeader
 import com.chargemaster.app.domain.model.CalibrationMode
 import com.chargemaster.app.domain.model.MonitoringMode
 import com.chargemaster.app.domain.model.TemperatureUnit
@@ -63,19 +82,30 @@ fun SettingsScreen(
     vm: SettingsViewModel = hiltViewModel(),
 ) {
     val p by vm.preferences.collectAsStateWithLifecycle()
+    val hasSessions by vm.hasSessions.collectAsStateWithLifecycle()
     var confirmClear by rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
+    val exportMessages = mapOf(
+        SettingsViewModel.ExportResult.DONE to stringResource(R.string.export_done),
+        SettingsViewModel.ExportResult.EMPTY to stringResource(R.string.export_empty),
+        SettingsViewModel.ExportResult.FAILED to stringResource(R.string.export_failed),
+    )
+    val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
+        if (uri != null) vm.exportSessions(uri, context.contentResolver) { r ->
+            Toast.makeText(context, exportMessages.getValue(r), Toast.LENGTH_SHORT).show()
+        }
+    }
     ScreenScaffold(title = stringResource(R.string.nav_settings)) {
         item {
-            AppCard {
+            SettingsSection(stringResource(R.string.general), padded = false) {
                 NavRow(stringResource(R.string.notification_settings), stringResource(R.string.notification_settings_subtitle), Icons.Outlined.Notifications, onOpenNotifications)
-                NavRow(stringResource(R.string.widgets), stringResource(R.string.widgets_subtitle), Icons.Outlined.Widgets, onOpenWidgets)
-                NavRow(stringResource(R.string.diagnostics), stringResource(R.string.diagnostics_subtitle), Icons.Outlined.MonitorHeart, onOpenDiagnostics)
-                NavRow(stringResource(R.string.privacy), stringResource(R.string.privacy_subtitle), Icons.Outlined.PrivacyTip, onOpenPrivacy)
+                NavRow(stringResource(R.string.widgets), stringResource(R.string.widgets_subtitle), Icons.Outlined.Widgets, onOpenWidgets, tint = Tokens.Info)
+                NavRow(stringResource(R.string.diagnostics), stringResource(R.string.diagnostics_subtitle), Icons.Outlined.MonitorHeart, onOpenDiagnostics, tint = Tokens.Warning)
+                NavRow(stringResource(R.string.privacy), stringResource(R.string.privacy_subtitle), Icons.Outlined.PrivacyTip, onOpenPrivacy, tint = MaterialTheme.colorScheme.secondary)
             }
         }
         item {
-            AppCard {
-                SectionHeader(stringResource(R.string.monitoring))
+            SettingsSection(stringResource(R.string.monitoring)) {
                 RadioGroup(
                     MonitoringMode.entries, p.monitoringMode,
                     label = { stringResource(when (it) { MonitoringMode.BASIC -> R.string.mode_basic; MonitoringMode.BALANCED -> R.string.mode_balanced; MonitoringMode.DETAILED -> R.string.mode_detailed }) },
@@ -87,8 +117,7 @@ fun SettingsScreen(
             }
         }
         item {
-            AppCard {
-                SectionHeader(stringResource(R.string.language))
+            SettingsSection(stringResource(R.string.language)) {
                 val current = AppCompatDelegate.getApplicationLocales().toLanguageTags().substringBefore('-').ifEmpty { "" }
                 var selected by rememberSaveable { mutableStateOf(current) }
                 RadioGroup(
@@ -104,8 +133,7 @@ fun SettingsScreen(
             }
         }
         item {
-            AppCard {
-                SectionHeader(stringResource(R.string.dashboard_cards))
+            SettingsSection(stringResource(R.string.dashboard_cards)) {
                 Text(stringResource(R.string.dashboard_cards_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 DashboardCard.entries.forEach { card ->
                     SwitchRow(stringResource(card.labelRes()), null, card in p.dashboardCards) { vm.toggleCard(card, it) }
@@ -113,9 +141,8 @@ fun SettingsScreen(
             }
         }
         item {
-            AppCard {
-                SectionHeader(stringResource(R.string.units))
-                RadioGroup(
+            SettingsSection(stringResource(R.string.units)) {
+                SegmentedChoice(
                     TemperatureUnit.entries, p.temperatureUnit,
                     label = { stringResource(if (it == TemperatureUnit.CELSIUS) R.string.celsius else R.string.fahrenheit) },
                     onSelect = vm::setUnit,
@@ -123,8 +150,7 @@ fun SettingsScreen(
             }
         }
         item {
-            AppCard {
-                SectionHeader(stringResource(R.string.appearance))
+            SettingsSection(stringResource(R.string.appearance)) {
                 RadioGroup(
                     ThemeMode.entries, p.themeMode,
                     label = { stringResource(when (it) { ThemeMode.SYSTEM -> R.string.theme_system; ThemeMode.LIGHT -> R.string.theme_light; ThemeMode.DARK -> R.string.theme_dark; ThemeMode.AMOLED -> R.string.theme_amoled }) },
@@ -138,8 +164,7 @@ fun SettingsScreen(
             }
         }
         item {
-            AppCard {
-                SectionHeader(stringResource(R.string.current_interpretation))
+            SettingsSection(stringResource(R.string.current_interpretation)) {
                 Text(stringResource(R.string.current_interpretation_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(8.dp))
                 Text(stringResource(R.string.current_unit), style = MaterialTheme.typography.labelLarge)
@@ -158,19 +183,38 @@ fun SettingsScreen(
             }
         }
         item {
-            AppCard {
-                SectionHeader(stringResource(R.string.data))
+            SettingsSection(stringResource(R.string.data)) {
                 val options = listOf(7, 30, 90, 365)
                 RadioGroup(options, p.retentionDays.takeIf { it in options } ?: 30,
                     label = { pluralStringResource(R.plurals.retention_days, it, it) }, onSelect = vm::setRetention)
                 Text(stringResource(R.string.retention_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(8.dp))
-                OutlinedButton(onClick = { confirmClear = true }) { Text(stringResource(R.string.clear_history)) }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Spacer(Modifier.height(4.dp))
+                NavRow(
+                    stringResource(R.string.export_csv),
+                    stringResource(if (hasSessions) R.string.export_csv_desc else R.string.export_empty),
+                    Icons.Outlined.FileDownload,
+                    onClick = {
+                        if (hasSessions) exportLauncher.launch("charge-master-sessions-" + LocalDate.now() + ".csv")
+                        else Toast.makeText(context, exportMessages.getValue(SettingsViewModel.ExportResult.EMPTY), Toast.LENGTH_SHORT).show()
+                    },
+                    tint = if (hasSessions) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                )
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = { confirmClear = true },
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                ) {
+                    Icon(Icons.Outlined.DeleteOutline, null, Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.clear_history))
+                }
             }
         }
         item {
             Text(stringResource(R.string.version_info, BuildConfig.VERSION_NAME), style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 8.dp))
         }
     }
     if (confirmClear) AlertDialog(
@@ -204,7 +248,7 @@ fun NotificationSettingsScreen(onBack: () -> Unit, vm: SettingsViewModel = hiltV
     val u = p.temperatureUnit
     ScreenScaffold(title = stringResource(R.string.notification_settings), onBack = onBack) {
         if (!granted) item {
-            AppCard {
+            AppCard(containerColor = Tokens.Warning.copy(alpha = 0.10f)) {
                 Text(stringResource(R.string.notifications_disabled), style = MaterialTheme.typography.bodyMedium)
                 Spacer(Modifier.height(8.dp))
                 Button(onClick = {
@@ -214,15 +258,13 @@ fun NotificationSettingsScreen(onBack: () -> Unit, vm: SettingsViewModel = hiltV
             }
         }
         item {
-            AppCard {
-                SectionHeader(stringResource(R.string.battery_alerts))
+            SettingsSection(stringResource(R.string.battery_alerts)) {
                 SwitchRow(stringResource(R.string.alert_low), null, a.lowBatteryEnabled) { v -> vm.updateAlerts { it.copy(lowBatteryEnabled = v) } }
                 IntSliderRow(stringResource(R.string.threshold), a.lowBatteryThreshold, 5..50, a.lowBatteryEnabled, Fmt::percent) { v -> vm.updateAlerts { it.copy(lowBatteryThreshold = v) } }
             }
         }
         item {
-            AppCard {
-                SectionHeader(stringResource(R.string.charging_alerts))
+            SettingsSection(stringResource(R.string.charging_alerts)) {
                 SwitchRow(stringResource(R.string.alert_threshold_n, Fmt.percent(a.threshold80)), stringResource(R.string.alert_80_desc), a.threshold80Enabled) { v -> vm.updateAlerts { it.copy(threshold80Enabled = v) } }
                 IntSliderRow(stringResource(R.string.threshold), a.threshold80, 50..95, a.threshold80Enabled, Fmt::percent) { v -> vm.updateAlerts { it.copy(threshold80 = v) } }
                 SwitchRow(stringResource(R.string.alert_threshold_n, Fmt.percent(a.threshold90)), null, a.threshold90Enabled) { v -> vm.updateAlerts { it.copy(threshold90Enabled = v) } }
@@ -237,8 +279,7 @@ fun NotificationSettingsScreen(onBack: () -> Unit, vm: SettingsViewModel = hiltV
             }
         }
         item {
-            AppCard {
-                SectionHeader(stringResource(R.string.temperature_alerts))
+            SettingsSection(stringResource(R.string.temperature_alerts)) {
                 SwitchRow(stringResource(R.string.alert_temp), null, a.highTempEnabled) { v -> vm.updateAlerts { it.copy(highTempEnabled = v) } }
                 IntSliderRow(stringResource(R.string.threshold), a.highTempThresholdC.toInt(), 35..55, a.highTempEnabled, { Fmt.temperature(it.toFloat(), u) }) { v ->
                     vm.updateAlerts { it.copy(highTempThresholdC = v.toFloat()) }
@@ -263,9 +304,9 @@ fun WidgetsScreen(onBack: () -> Unit) {
         ).forEach { (title, desc, cls) ->
             item {
                 AppCard {
-                    Text(stringResource(title), style = MaterialTheme.typography.titleMedium)
+                    CardHeader(stringResource(title), Icons.Outlined.Widgets)
                     Text(stringResource(desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(12.dp))
                     if (canPin) OutlinedButton(onClick = { manager.requestPinAppWidget(ComponentName(context, cls), null, null) }) {
                         Text(stringResource(R.string.add_to_home))
                     } else Text(stringResource(R.string.widget_manual_add), style = MaterialTheme.typography.bodySmall)
@@ -274,7 +315,7 @@ fun WidgetsScreen(onBack: () -> Unit) {
         }
         item {
             AppCard {
-                Text(stringResource(R.string.quick_tile), style = MaterialTheme.typography.titleMedium)
+                CardHeader(stringResource(R.string.quick_tile), Icons.Outlined.ToggleOn)
                 Text(stringResource(R.string.quick_tile_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
@@ -285,16 +326,15 @@ fun WidgetsScreen(onBack: () -> Unit) {
 fun PrivacyScreen(onBack: () -> Unit) {
     ScreenScaffold(title = stringResource(R.string.privacy), onBack = onBack) {
         listOf(
-            R.string.privacy_offline_title to R.string.privacy_offline_body,
-            R.string.privacy_data_title to R.string.privacy_data_body,
-            R.string.privacy_permissions_title to R.string.privacy_permissions_body,
-            R.string.privacy_sharing_title to R.string.privacy_sharing_body,
-            R.string.privacy_limits_title to R.string.privacy_limits_body,
-        ).forEach { (t, b) ->
+            Triple(R.string.privacy_offline_title, R.string.privacy_offline_body, Icons.Outlined.WifiOff),
+            Triple(R.string.privacy_data_title, R.string.privacy_data_body, Icons.Outlined.Storage),
+            Triple(R.string.privacy_permissions_title, R.string.privacy_permissions_body, Icons.Outlined.Key),
+            Triple(R.string.privacy_sharing_title, R.string.privacy_sharing_body, Icons.Outlined.Share),
+            Triple(R.string.privacy_limits_title, R.string.privacy_limits_body, Icons.Outlined.Info),
+        ).forEach { (t, b, icon) ->
             item {
                 AppCard {
-                    Text(stringResource(t), style = MaterialTheme.typography.titleMedium)
-                    Spacer(Modifier.height(4.dp))
+                    CardHeader(stringResource(t), icon)
                     Text(stringResource(b), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }

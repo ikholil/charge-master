@@ -1,6 +1,15 @@
 package com.chargemaster.app.feature.insights
 
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material.icons.automirrored.outlined.ShowChart
+import androidx.compose.material.icons.outlined.BatteryChargingFull
+import androidx.compose.material.icons.outlined.EmojiEvents
+import androidx.compose.material.icons.outlined.Lightbulb
+import androidx.compose.ui.graphics.StrokeCap
+import com.chargemaster.app.core.design.CardHeader
+import com.chargemaster.app.core.design.ProgressTrack
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,7 +39,6 @@ import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.material.icons.outlined.ScreenLockPortrait
 import androidx.compose.material.icons.outlined.Thermostat
 import androidx.compose.material.icons.outlined.Timelapse
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -56,7 +64,6 @@ import com.chargemaster.app.core.design.NavRow
 import com.chargemaster.app.core.design.Period
 import com.chargemaster.app.core.design.PeriodSelector
 import com.chargemaster.app.core.design.ScreenScaffold
-import com.chargemaster.app.core.design.SectionHeader
 import com.chargemaster.app.core.design.ValueKind
 import com.chargemaster.app.core.design.durationText
 import com.chargemaster.app.domain.engine.DischargeAnalyzer
@@ -123,6 +130,7 @@ fun InsightsScreen(
     onOpenTemperature: () -> Unit,
     onOpenHistory: () -> Unit,
     onOpenReport: () -> Unit,
+    onOpenTips: () -> Unit = {},
     vm: InsightsViewModel = hiltViewModel(),
 ) {
     val st by vm.state.collectAsStateWithLifecycle()
@@ -131,8 +139,8 @@ fun InsightsScreen(
         item { PeriodSelector(st.period, { vm.period.value = it }) }
         item {
             AppCard {
-                SectionHeader(stringResource(R.string.battery_timeline))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                CardHeader(stringResource(R.string.battery_timeline), Icons.AutoMirrored.Outlined.ShowChart)
+                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     TimelineMetric.entries.forEach { m ->
                         FilterChip(selected = st.metric == m, onClick = { vm.metric.value = m }, label = {
                             Text(stringResource(when (m) {
@@ -192,13 +200,13 @@ fun InsightsScreen(
         s?.let { stats ->
             item {
                 AppCard {
-                    SectionHeader(stringResource(R.string.charging_vs_discharging))
+                    CardHeader(stringResource(R.string.charging_vs_discharging), Icons.Outlined.BatteryChargingFull)
                     KeyValueRow(stringResource(R.string.time_charging), durationText((stats.chargingHours * 3_600_000).toLong()), kind = ValueKind.HISTORICAL)
                     KeyValueRow(stringResource(R.string.time_discharging), durationText((stats.dischargingHours * 3_600_000).toLong()), kind = ValueKind.HISTORICAL)
                     Spacer(Modifier.height(8.dp))
                     Text(stringResource(R.string.monitoring_coverage, Fmt.percent((stats.coverage * 100).toInt())), style = MaterialTheme.typography.labelLarge)
                     Spacer(Modifier.height(4.dp))
-                    LinearProgressIndicator(progress = { stats.coverage }, modifier = Modifier)
+                    ProgressTrack(stats.coverage, height = 8.dp)
                     Spacer(Modifier.height(4.dp))
                     Text(stringResource(R.string.coverage_explainer), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
@@ -207,10 +215,13 @@ fun InsightsScreen(
         item { HabitCard(st.habit) }
         item { InfoBanner(stringResource(R.string.per_app_explainer)) }
         item {
-            AppCard {
-                NavRow(stringResource(R.string.temperature_monitor), stringResource(R.string.temperature_subtitle), Icons.Outlined.Thermostat, onOpenTemperature)
-                NavRow(stringResource(R.string.charging_history), stringResource(R.string.history_subtitle), Icons.Outlined.History, onOpenHistory)
-                NavRow(stringResource(R.string.battery_report), stringResource(R.string.report_subtitle), Icons.Outlined.Description, onOpenReport)
+            AppCard(contentPadding = 8.dp) {
+                Column(Modifier.padding(horizontal = 10.dp)) {
+                    NavRow(stringResource(R.string.temperature_monitor), stringResource(R.string.temperature_subtitle), Icons.Outlined.Thermostat, onOpenTemperature, tint = Tokens.Warning)
+                    NavRow(stringResource(R.string.charging_history), stringResource(R.string.history_subtitle), Icons.Outlined.History, onOpenHistory)
+                    NavRow(stringResource(R.string.battery_report), stringResource(R.string.report_subtitle), Icons.Outlined.Description, onOpenReport, tint = Tokens.Info)
+                    NavRow(stringResource(R.string.tips_title), stringResource(R.string.tips_subtitle), Icons.Outlined.Lightbulb, onOpenTips, tint = Tokens.Info)
+                }
             }
         }
     }
@@ -219,7 +230,7 @@ fun InsightsScreen(
 @Composable
 private fun HabitCard(habit: HabitAnalyzer.HabitScore?) {
     AppCard {
-        SectionHeader(stringResource(R.string.habit_score))
+        CardHeader(stringResource(R.string.habit_score), Icons.Outlined.EmojiEvents)
         val score = habit?.score
         if (habit == null || score == null) {
             Text(stringResource(R.string.habit_needs_sessions, HabitAnalyzer.MIN_SESSIONS, habit?.sessionCount ?: 0),
@@ -229,7 +240,7 @@ private fun HabitCard(habit: HabitAnalyzer.HabitScore?) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(progress = { score / 100f }, modifier = Modifier.size(72.dp), strokeWidth = 7.dp,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant)
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant, strokeCap = StrokeCap.Round, gapSize = 0.dp)
                 Text(score.toString(), style = MaterialTheme.typography.titleLarge)
             }
             Spacer(Modifier.width(16.dp))
@@ -256,7 +267,8 @@ private fun HabitCard(habit: HabitAnalyzer.HabitScore?) {
                     Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
                     Text("${r.met}/${r.eligible}", style = MaterialTheme.typography.labelLarge)
                 }
-                LinearProgressIndicator(progress = { r.ratio }, modifier = Modifier.fillMaxWidth().padding(top = 4.dp))
+                Spacer(Modifier.height(6.dp))
+                ProgressTrack(r.ratio, height = 6.dp, color = if (r.ratio >= 0.6f) MaterialTheme.colorScheme.primary else Tokens.Warning)
             }
         }
         Spacer(Modifier.height(4.dp))

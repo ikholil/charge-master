@@ -374,6 +374,57 @@
     <string name="card_quick_links">Quick links</string>
     <string name="copy">Copy</string>
     <string name="copied">Copied to clipboard</string>
+    <string name="speed_trickle">Trickle charging</string>
+    <string name="speed_slow">Slow charging</string>
+    <string name="speed_standard">Standard charging</string>
+    <string name="speed_fast">Fast charging</string>
+    <string name="speed_super_fast">Super-fast charging</string>
+    <string name="speed_tier">Charging speed</string>
+    <string name="speed_tier_note">Estimated from measured power. Power naturally drops as the battery fills or warms up.</string>
+    <string name="temperature_zone">Temperature zone</string>
+    <string name="zone_cold">Cold</string>
+    <string name="zone_ideal">Ideal</string>
+    <string name="zone_warm">Warm</string>
+    <string name="zone_hot">Hot</string>
+    <string name="zone_critical">Too hot</string>
+    <string name="zone_cold_desc">Below 10 °C charging is slower and can stress the battery. Warm the phone up before charging.</string>
+    <string name="zone_ideal_desc">A comfortable range for charging and everyday use.</string>
+    <string name="zone_warm_desc">Slightly warm. Avoid heavy use while charging.</string>
+    <string name="zone_hot_desc">Hot. Remove the case, pause games or unplug to let it cool down.</string>
+    <string name="zone_critical_desc">Very hot. Stop charging and let the phone cool in a shaded place.</string>
+    <string name="since_unplug">Since last charge</string>
+    <string name="on_battery_for">On battery</string>
+    <string name="used_since">Used</string>
+    <string name="drain_rate">Drain</string>
+    <string name="since_unplug_charged_to">Charged to %1$s, %2$s ago</string>
+    <string name="tips_title">Battery care tips</string>
+    <string name="tips_subtitle">Simple habits for a longer-lasting battery</string>
+    <string name="tips_intro">Lithium-ion batteries wear out with time, heat and full charge cycles. These habits slow that wear down without changing how you use your phone.</string>
+    <string name="tip_of_day">Tip of the day</string>
+    <string name="quick_tips_subtitle">Care guide</string>
+    <string name="tip_1_title" formatted="false">Stay between 20% and 80%</string>
+    <string name="tip_1_body" formatted="false">Lithium-ion cells age slowest in the middle of their range. Topping up often is fine; deep discharges and long stays at 100% are not.</string>
+    <string name="tip_2_title">Keep it cool</string>
+    <string name="tip_2_body">Heat is the biggest cause of battery wear. Don’t charge in direct sun, on a pillow or in a hot car.</string>
+    <string name="tip_3_title">Take thick cases off when fast charging</string>
+    <string name="tip_3_body">Cases trap heat. If the phone feels warm while charging, remove the case.</string>
+    <string name="tip_4_title">Use a good charger and cable</string>
+    <string name="tip_4_body">Certified chargers and cables deliver stable power and negotiate fast charging safely.</string>
+    <string name="tip_5_title">Turn on adaptive charging</string>
+    <string name="tip_5_body" formatted="false">If your phone offers adaptive or optimised charging, enable it so the battery reaches 100% just before you unplug instead of sitting full overnight.</string>
+    <string name="tip_6_title">Avoid gaming while charging</string>
+    <string name="tip_6_body">Heavy use while charging adds processor heat on top of charging heat.</string>
+    <string name="tip_7_title">Store it half full</string>
+    <string name="tip_7_body" formatted="false">For storage longer than a few weeks, leave the battery around 50%, power the device off and keep it somewhere cool.</string>
+    <string name="tip_8_title">Keep software up to date</string>
+    <string name="tip_8_body">System updates often include battery and charging improvements.</string>
+    <string name="export_csv">Export charging history</string>
+    <string name="export_csv_desc">Save every recorded charging session as a CSV spreadsheet.</string>
+    <string name="export_done">Charging history exported</string>
+    <string name="export_failed">Export failed</string>
+    <string name="export_empty">No charging sessions to export yet</string>
+    <string name="general">General</string>
+    <string name="about">About</string>
     <plurals name="sessions_count">
         <item quantity="one">%1$d session in this period</item>
         <item quantity="other">%1$d sessions in this period</item>

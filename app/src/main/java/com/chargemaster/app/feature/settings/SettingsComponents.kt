@@ -2,9 +2,19 @@ package com.chargemaster.app.feature.settings
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import com.chargemaster.app.core.design.AppCard
+import com.chargemaster.app.core.design.GroupLabel
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +49,7 @@ fun SwitchRow(title: String, subtitle: String? = null, checked: Boolean, onChang
             Text(title, style = MaterialTheme.typography.bodyLarge)
             subtitle?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
         }
+        Spacer(Modifier.width(12.dp))
         Switch(checked = checked, onCheckedChange = null)
     }
 }
@@ -83,5 +94,30 @@ fun ClickRow(title: String, subtitle: String? = null, onClick: () -> Unit) {
     Column(Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onClick).padding(vertical = 12.dp)) {
         Text(title, style = MaterialTheme.typography.bodyLarge)
         subtitle?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+    }
+}
+
+/** A labelled group of settings: label above a flat card. */
+@Composable
+fun SettingsSection(title: String, padded: Boolean = true, content: @Composable ColumnScope.() -> Unit) {
+    Column {
+        GroupLabel(title)
+        Spacer(Modifier.height(6.dp))
+        if (padded) AppCard(content = content)
+        else AppCard(contentPadding = 8.dp) { Column(Modifier.padding(horizontal = 10.dp), content = content) }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun <T> SegmentedChoice(options: List<T>, selected: T, label: @Composable (T) -> String, onSelect: (T) -> Unit) {
+    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+        options.forEachIndexed { i, o ->
+            SegmentedButton(
+                selected = o == selected, onClick = { onSelect(o) },
+                shape = SegmentedButtonDefaults.itemShape(i, options.size),
+                label = { Text(label(o), maxLines = 1) },
+            )
+        }
     }
 }

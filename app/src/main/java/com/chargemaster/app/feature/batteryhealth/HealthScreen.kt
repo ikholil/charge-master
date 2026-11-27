@@ -1,6 +1,22 @@
 package com.chargemaster.app.feature.batteryhealth
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.automirrored.outlined.TrendingDown
+import androidx.compose.material.icons.outlined.Android
+import androidx.compose.material.icons.outlined.BatteryStd
+import androidx.compose.material.icons.outlined.HealthAndSafety
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Lightbulb
+import androidx.compose.material.icons.outlined.Loop
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import com.chargemaster.app.core.design.BatteryRing
+import com.chargemaster.app.core.design.CardHeader
+import com.chargemaster.app.core.design.KindDot
+import com.chargemaster.app.core.design.Tokens
+import kotlin.math.roundToInt
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -37,11 +53,9 @@ import com.chargemaster.app.core.design.ChartPoint
 import com.chargemaster.app.core.design.ConfidenceChip
 import com.chargemaster.app.core.design.InfoBanner
 import com.chargemaster.app.core.design.KeyValueRow
-import com.chargemaster.app.core.design.KindTag
 import com.chargemaster.app.core.design.LineChart
 import com.chargemaster.app.core.design.NavRow
 import com.chargemaster.app.core.design.ScreenScaffold
-import com.chargemaster.app.core.design.SectionHeader
 import com.chargemaster.app.core.design.ValueKind
 import com.chargemaster.app.core.design.labelRes
 import com.chargemaster.app.domain.engine.CapacityEstimator
@@ -91,31 +105,66 @@ class HealthViewModel @Inject constructor(
 }
 
 @Composable
-fun HealthScreen(onOpenDiagnostics: () -> Unit, onOpenTemperature: () -> Unit, vm: HealthViewModel = hiltViewModel()) {
+fun HealthScreen(onOpenDiagnostics: () -> Unit, onOpenTemperature: () -> Unit, onOpenTips: () -> Unit = {}, vm: HealthViewModel = hiltViewModel()) {
     val st by vm.state.collectAsStateWithLifecycle()
     var editing by rememberSaveable { mutableStateOf(false) }
     val s = st.snapshot
     ScreenScaffold(title = stringResource(R.string.battery_health)) {
         item {
             AppCard {
-                SectionHeader(stringResource(R.string.android_reported_status))
-                Text(s?.health?.let { stringResource(it.labelRes()) } ?: stringResource(R.string.unavailable), style = MaterialTheme.typography.headlineSmall)
-                Spacer(Modifier.height(4.dp))
-                KindTag(ValueKind.LIVE)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val pct = st.healthPercent
+                    BatteryRing(level = pct?.roundToInt()?.coerceIn(0, 100), charging = false, size = 108.dp, stroke = 10.dp) {
+                        Icon(Icons.Outlined.HealthAndSafety, null, tint = MaterialTheme.colorScheme.primary)
+                    }
+                    Spacer(Modifier.width(18.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(stringResource(R.string.estimated_health), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(pct?.let(Fmt::percent1) ?: stringResource(R.string.insufficient_data),
+                            style = if (pct != null) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.titleMedium)
+                        Spacer(Modifier.height(6.dp))
+                        KindDot(ValueKind.ESTIMATE)
+                    }
+                }
+                Spacer(Modifier.height(14.dp))
+                Text(
+                    stringResource(
+                        when {
+                            st.designCapacity == null -> R.string.health_needs_design
+                            st.confidence < Confidence.MEDIUM -> R.string.health_needs_data
+                            else -> R.string.health_explainer
+                        },
+                    ),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(8.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                KeyValueRow(stringResource(R.string.design_capacity), st.designCapacity?.let { Fmt.capacity(it.toFloat()) }, kind = ValueKind.USER_PROVIDED)
+                OutlinedButton(onClick = { editing = true }) { Text(stringResource(R.string.set_design_capacity)) }
+            }
+        }
+        item {
+            AppCard {
+                CardHeader(stringResource(R.string.android_reported_status), Icons.Outlined.Android)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(s?.health?.let { stringResource(it.labelRes()) } ?: stringResource(R.string.unavailable), style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.weight(1f))
+                    KindDot(ValueKind.LIVE)
+                }
                 Spacer(Modifier.height(6.dp))
                 Text(stringResource(R.string.android_status_explainer), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         item {
             AppCard {
-                SectionHeader(stringResource(R.string.estimated_capacity))
+                CardHeader(stringResource(R.string.estimated_capacity), Icons.Outlined.BatteryStd)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(st.estimatedCapacity?.let(Fmt::capacity) ?: stringResource(R.string.insufficient_data),
                         style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
                     ConfidenceChip(st.confidence)
                 }
-                Spacer(Modifier.height(4.dp))
-                KindTag(ValueKind.ESTIMATE)
+                Spacer(Modifier.height(6.dp))
+                KindDot(ValueKind.ESTIMATE)
                 Spacer(Modifier.height(6.dp))
                 Text(stringResource(R.string.capacity_method_explainer, CapacityEstimator.MIN_SPAN_PERCENT),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -129,29 +178,7 @@ fun HealthScreen(onOpenDiagnostics: () -> Unit, onOpenTemperature: () -> Unit, v
         }
         item {
             AppCard {
-                SectionHeader(stringResource(R.string.estimated_health))
-                Text(st.healthPercent?.let(Fmt::percent1) ?: stringResource(R.string.insufficient_data), style = MaterialTheme.typography.headlineSmall)
-                Spacer(Modifier.height(4.dp))
-                KindTag(ValueKind.ESTIMATE)
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    stringResource(
-                        when {
-                            st.designCapacity == null -> R.string.health_needs_design
-                            st.confidence < Confidence.MEDIUM -> R.string.health_needs_data
-                            else -> R.string.health_explainer
-                        },
-                    ),
-                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(Modifier.height(8.dp))
-                KeyValueRow(stringResource(R.string.design_capacity), st.designCapacity?.let { Fmt.capacity(it.toFloat()) }, kind = ValueKind.USER_PROVIDED)
-                OutlinedButton(onClick = { editing = true }) { Text(stringResource(R.string.set_design_capacity)) }
-            }
-        }
-        item {
-            AppCard {
-                SectionHeader(stringResource(R.string.wear_trend))
+                CardHeader(stringResource(R.string.wear_trend), Icons.AutoMirrored.Outlined.TrendingDown)
                 val design = st.designCapacity
                 val pts = st.history.filter { it.estimatedCapacityMah != null && it.confidence >= Confidence.MEDIUM }
                     .map { ChartPoint((it.timestamp - (st.history.firstOrNull()?.timestamp ?: 0)) / 86_400_000f, it.estimatedCapacityMah!!) }
@@ -170,17 +197,19 @@ fun HealthScreen(onOpenDiagnostics: () -> Unit, onOpenTemperature: () -> Unit, v
         }
         item {
             AppCard {
-                SectionHeader(stringResource(R.string.cycle_count))
-                Text(s?.cycleCount?.toString() ?: stringResource(R.string.not_reported), style = MaterialTheme.typography.headlineSmall)
-                Spacer(Modifier.height(4.dp))
-                KindTag(if (s?.cycleCount != null) ValueKind.LIVE else ValueKind.UNSUPPORTED)
+                CardHeader(stringResource(R.string.cycle_count), Icons.Outlined.Loop)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(s?.cycleCount?.toString() ?: stringResource(R.string.not_reported),
+                        style = if (s?.cycleCount != null) MaterialTheme.typography.headlineSmall else MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                    KindDot(if (s?.cycleCount != null) ValueKind.LIVE else ValueKind.UNSUPPORTED)
+                }
                 Spacer(Modifier.height(6.dp))
                 Text(stringResource(R.string.cycle_count_explainer), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         item {
             AppCard {
-                SectionHeader(stringResource(R.string.battery_details))
+                CardHeader(stringResource(R.string.battery_details), Icons.Outlined.Info)
                 KeyValueRow(stringResource(R.string.technology), s?.technology)
                 KeyValueRow(stringResource(R.string.metric_voltage), s?.voltageMv?.let(Fmt::voltage))
                 KeyValueRow(stringResource(R.string.metric_temperature), s?.temperatureC?.let { Fmt.temperature(it, st.unit) })
@@ -189,9 +218,12 @@ fun HealthScreen(onOpenDiagnostics: () -> Unit, onOpenTemperature: () -> Unit, v
             }
         }
         item {
-            AppCard {
+            AppCard(contentPadding = 8.dp) {
+                Column(Modifier.padding(horizontal = 10.dp)) {
                 NavRow(stringResource(R.string.diagnostics), stringResource(R.string.diagnostics_subtitle), Icons.Outlined.MonitorHeart, onOpenDiagnostics)
-                NavRow(stringResource(R.string.temperature_monitor), null, Icons.Outlined.Thermostat, onOpenTemperature)
+                NavRow(stringResource(R.string.temperature_monitor), stringResource(R.string.quick_temperature_subtitle), Icons.Outlined.Thermostat, onOpenTemperature, tint = Tokens.Warning)
+                NavRow(stringResource(R.string.tips_title), stringResource(R.string.tips_subtitle), Icons.Outlined.Lightbulb, onOpenTips, tint = Tokens.Info)
+                }
             }
         }
     }

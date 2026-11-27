@@ -1,6 +1,13 @@
 package com.chargemaster.app.feature.settings
 
+import android.content.ContentResolver
+import android.net.Uri
 import androidx.lifecycle.ViewModel
+import com.chargemaster.app.core.common.IoDispatcher
+import com.chargemaster.app.domain.repository.SessionRepository
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import androidx.lifecycle.viewModelScope
 import com.chargemaster.app.domain.model.AlertPreferences
 import com.chargemaster.app.domain.model.CalibrationMode
@@ -25,8 +32,32 @@ class SettingsViewModel @Inject constructor(
     private val prefs: PreferencesRepository,
     private val clearAll: ClearAllDataUseCase,
     private val prune: PruneHistoryUseCase,
+    private val sessions: SessionRepository,
+    @IoDispatcher private val io: CoroutineDispatcher,
 ) : ViewModel() {
     val preferences: StateFlow<UserPreferences> = prefs.preferences.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UserPreferences())
+
+    /** Whether there is anything to export; the export button is disabled otherwise. */
+    val hasSessions: StateFlow<Boolean> = sessions.observeRecent(2).map { list -> list.any { !it.isOpen } } // at most one session is open
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    enum class ExportResult { DONE, EMPTY, FAILED }
+
+    /** Writes all closed charging sessions as CSV to a document the user picked. */
+    fun exportSessions(uri: Uri, resolver: ContentResolver, onResult: (ExportResult) -> Unit) {
+        viewModelScope.launch {
+            val result = withContext(io) {
+                runCatching {
+                    val list = sessions.recent(Int.MAX_VALUE).filter { !it.isOpen }
+                    if (list.isEmpty()) return@runCatching ExportResult.EMPTY
+                    val stream = resolver.openOutputStream(uri, "wt") ?: return@runCatching ExportResult.FAILED
+                    stream.use { it.write(SessionCsv.build(list).toByteArray(Charsets.UTF_8)) }
+                    ExportResult.DONE
+                }.getOrDefault(ExportResult.FAILED)
+            }
+            onResult(result)
+        }
+    }
 
     private fun go(block: suspend () -> Unit) { viewModelScope.launch { block() } }
 

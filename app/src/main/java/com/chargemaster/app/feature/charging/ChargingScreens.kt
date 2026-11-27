@@ -17,6 +17,29 @@ import androidx.compose.material.icons.outlined.Thermostat
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.material.icons.automirrored.outlined.CompareArrows
+import androidx.compose.material.icons.automirrored.outlined.ShowChart
+import androidx.compose.material.icons.outlined.BatteryChargingFull
+import androidx.compose.material.icons.outlined.BatteryStd
+import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.Dock
+import androidx.compose.material.icons.outlined.ElectricBolt
+import androidx.compose.material.icons.outlined.ScatterPlot
+import androidx.compose.material.icons.outlined.Summarize
+import androidx.compose.material.icons.outlined.Usb
+import androidx.compose.material.icons.outlined.Wifi
+import com.chargemaster.app.core.design.CardHeader
+import com.chargemaster.app.core.design.GroupLabel
+import com.chargemaster.app.core.design.IconBadge
+import com.chargemaster.app.core.design.ProgressTrack
+import com.chargemaster.app.core.design.StatusPill
+import com.chargemaster.app.core.design.color
+import com.chargemaster.app.domain.engine.ChargeSpeed
+import com.chargemaster.app.domain.model.ChargingSource
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.mutableStateOf
@@ -73,24 +96,37 @@ fun ChargingScreen(onOpenHistory: () -> Unit, onOpenSession: (Long) -> Unit, vm:
     ScreenScaffold(title = stringResource(R.string.charging_monitor)) {
         item {
             AppCard {
-                val status = stringResource((s?.status ?: ChargingStatus.UNKNOWN).labelRes())
-                Text(status, style = MaterialTheme.typography.titleLarge)
-                Text(
-                    if (s?.isPluggedIn == true) stringResource(R.string.charging_via, stringResource(s.source.labelRes()))
-                    else stringResource(R.string.plug_in_hint),
-                    style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(Modifier.height(12.dp))
-                LinearProgressIndicator(
-                    progress = { (s?.level ?: 0) / 100f },
-                    modifier = Modifier.fillMaxWidth().height(10.dp),
-                )
-                Spacer(Modifier.height(6.dp))
-                Text(s?.level?.let(Fmt::percent) ?: stringResource(R.string.unavailable), style = MaterialTheme.typography.headlineSmall)
+                val charging = s?.isPluggedIn == true
+                val speed = if (charging) ChargeSpeed.classify(s?.powerW) else null
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconBadge(if (charging) Icons.Outlined.ElectricBolt else Icons.Outlined.Power,
+                        tint = if (charging) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, size = 44.dp)
+                    Spacer(Modifier.width(14.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(stringResource((s?.status ?: ChargingStatus.UNKNOWN).labelRes()), style = MaterialTheme.typography.titleLarge)
+                        Text(
+                            if (charging) stringResource(R.string.charging_via, stringResource(s!!.source.labelRes()))
+                            else stringResource(R.string.plug_in_hint),
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                Spacer(Modifier.height(18.dp))
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(s?.level?.let(Fmt::percent) ?: stringResource(R.string.unavailable), style = MaterialTheme.typography.displaySmall,
+                        fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+                    speed?.let { StatusPill(stringResource(it.labelRes()), it.color(), icon = Icons.Outlined.Speed, modifier = Modifier.padding(bottom = 6.dp)) }
+                }
+                Spacer(Modifier.height(10.dp))
+                ProgressTrack((s?.level ?: 0) / 100f, height = 12.dp)
+                if (speed != null) {
+                    Spacer(Modifier.height(10.dp))
+                    Text(stringResource(R.string.speed_tier_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
         }
         if (s != null && !s.isPluggedIn) st.recent.firstOrNull { !it.isOpen }?.let { last ->
-            item { LastChargeCard(last, s.timestamp) { onOpenSession(last.id) } }
+            item { LastChargeCard(last, s.timestamp, onClick = { onOpenSession(last.id) }, currentLevel = s.level) }
         }
         item {
             MetricGrid(
@@ -122,7 +158,7 @@ fun ChargingScreen(onOpenHistory: () -> Unit, onOpenSession: (Long) -> Unit, vm:
         }
         item {
             AppCard {
-                SectionHeader(stringResource(R.string.live_power_chart))
+                CardHeader(stringResource(R.string.live_power_chart), Icons.AutoMirrored.Outlined.ShowChart)
                 val pts = st.livePower.mapNotNull { p -> p.powerW?.let { ChartPoint((p.timestamp - (s?.timestamp ?: 0)) / 1000f, abs(it)) } }
                 if (pts.size < 2) {
                     Text(stringResource(if (s?.powerW == null) R.string.power_not_supported else R.string.collecting_samples),
@@ -141,7 +177,7 @@ fun ChargingScreen(onOpenHistory: () -> Unit, onOpenSession: (Long) -> Unit, vm:
         }
         item { InfoBanner(stringResource(R.string.no_charge_control)) }
         item {
-            SectionHeader(stringResource(R.string.recent_sessions)) {
+            GroupLabel(stringResource(R.string.recent_sessions)) {
                 TextButton(onClick = onOpenHistory) { Text(stringResource(R.string.view_all)) }
             }
         }
@@ -153,15 +189,18 @@ fun ChargingScreen(onOpenHistory: () -> Unit, onOpenSession: (Long) -> Unit, vm:
 
 @Composable
 fun SessionRow(s: ChargingSession, unit: TemperatureUnit, onClick: () -> Unit) {
-    AppCard(onClick = onClick) {
+    AppCard(onClick = onClick, contentPadding = 14.dp) {
         Row(verticalAlignment = Alignment.CenterVertically) {
+            IconBadge(s.source.icon(), tint = if (s.isOpen) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary, size = 40.dp)
+            Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(dateTimeText(s.startTime), style = MaterialTheme.typography.titleSmall)
+                Text("${s.startLevel?.let(Fmt::percent) ?: "—"} → ${s.endLevel?.let(Fmt::percent) ?: "—"}", style = MaterialTheme.typography.titleSmall)
                 Text(
-                    "${s.startLevel?.let(Fmt::percent) ?: "—"} → ${s.endLevel?.let(Fmt::percent) ?: "—"} · ${durationText(s.durationMs())} · ${stringResource(s.source.labelRes())}",
+                    "${dateTimeText(s.startTime)} · ${durationText(s.durationMs())}",
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            Spacer(Modifier.width(8.dp))
             Column(horizontalAlignment = Alignment.End) {
                 s.averagePowerW?.let { Text(Fmt.power(it), style = MaterialTheme.typography.titleSmall) }
                 Text(
@@ -172,6 +211,14 @@ fun SessionRow(s: ChargingSession, unit: TemperatureUnit, onClick: () -> Unit) {
             }
         }
     }
+}
+
+private fun ChargingSource.icon(): ImageVector = when (this) {
+    ChargingSource.AC -> Icons.Outlined.Power
+    ChargingSource.USB -> Icons.Outlined.Usb
+    ChargingSource.WIRELESS -> Icons.Outlined.Wifi
+    ChargingSource.DOCK -> Icons.Outlined.Dock
+    else -> Icons.Outlined.ElectricBolt
 }
 
 @Composable
@@ -186,7 +233,7 @@ fun ChargingHistoryScreen(onBack: () -> Unit, onOpenSession: (Long) -> Unit, vm:
         }
         item {
             AppCard {
-                SectionHeader(stringResource(R.string.charging_calendar))
+                CardHeader(stringResource(R.string.charging_calendar), Icons.Outlined.CalendarMonth)
                 val locale = java.util.Locale.getDefault()
                 val labels = stats.days.mapIndexed { i, d ->
                     if (stats.days.size <= 7) d.dayOfWeek.getDisplayName(java.time.format.TextStyle.NARROW, locale)
@@ -203,7 +250,7 @@ fun ChargingHistoryScreen(onBack: () -> Unit, onOpenSession: (Long) -> Unit, vm:
         }
         item {
             AppCard {
-                SectionHeader(stringResource(R.string.summary))
+                CardHeader(stringResource(R.string.summary), Icons.Outlined.Summarize)
                 KeyValueRow(stringResource(R.string.average_duration), stats.averageDurationMs?.let { durationText(it) }, kind = ValueKind.HISTORICAL)
                 KeyValueRow(stringResource(R.string.peak_observed_power), stats.peakPowerW?.let(Fmt::power), kind = ValueKind.HISTORICAL)
                 KeyValueRow(stringResource(R.string.fastest_session), stats.fastest?.percentPerHour?.let(Fmt::rate), kind = ValueKind.HISTORICAL)
@@ -212,7 +259,7 @@ fun ChargingHistoryScreen(onBack: () -> Unit, onOpenSession: (Long) -> Unit, vm:
         }
         item {
             AppCard {
-                SectionHeader(stringResource(R.string.speed_by_source))
+                CardHeader(stringResource(R.string.speed_by_source), Icons.Outlined.Speed)
                 stats.bySource.forEach { src ->
                     KeyValueRow(
                         "${stringResource(src.source.labelRes())} (${src.sessions})",
@@ -226,7 +273,7 @@ fun ChargingHistoryScreen(onBack: () -> Unit, onOpenSession: (Long) -> Unit, vm:
         }
         item {
             AppCard {
-                SectionHeader(stringResource(R.string.power_vs_level))
+                CardHeader(stringResource(R.string.power_vs_level), Icons.Outlined.ScatterPlot)
                 if (st.powerVsLevel.size < 5) Text(stringResource(R.string.insufficient_history), style = MaterialTheme.typography.bodyMedium)
                 else ScatterChart(st.powerVsLevel, stringResource(R.string.chart_power_vs_level_desc, st.powerVsLevel.size), xRange = 0f..100f)
                 Text(stringResource(R.string.power_vs_level_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -234,12 +281,12 @@ fun ChargingHistoryScreen(onBack: () -> Unit, onOpenSession: (Long) -> Unit, vm:
         }
         item {
             AppCard {
-                SectionHeader(stringResource(R.string.temp_vs_power))
+                CardHeader(stringResource(R.string.temp_vs_power), Icons.Outlined.Thermostat)
                 if (st.tempVsPower.size < 3) Text(stringResource(R.string.insufficient_history), style = MaterialTheme.typography.bodyMedium)
                 else ScatterChart(st.tempVsPower, stringResource(R.string.chart_temp_vs_power_desc, st.tempVsPower.size))
             }
         }
-        item { SectionHeader(stringResource(R.string.all_sessions)) }
+        item { GroupLabel(stringResource(R.string.all_sessions)) }
         items(st.sessions, key = { it.id }) { SessionRow(it, st.unit) { onOpenSession(it.id) } }
     }
 }
@@ -270,14 +317,18 @@ fun SessionDetailScreen(onBack: () -> Unit, vm: SessionDetailViewModel = hiltVie
         }
         item {
             AppCard {
-                Text(dateTimeText(s.startTime), style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.height(4.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    KindTag(ValueKind.HISTORICAL)
-                    Text(stringResource(when { s.isOpen -> R.string.session_open; s.isComplete -> R.string.session_complete; else -> R.string.session_partial }),
-                        style = MaterialTheme.typography.labelLarge)
+                Text("${s.startLevel?.let(Fmt::percent) ?: "—"} → ${s.endLevel?.let(Fmt::percent) ?: "—"}",
+                    style = MaterialTheme.typography.headlineMedium)
+                Text(dateTimeText(s.startTime), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(10.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    StatusPill(stringResource(when { s.isOpen -> R.string.session_open; s.isComplete -> R.string.session_complete; else -> R.string.session_partial }),
+                        if (s.isComplete || s.isOpen) MaterialTheme.colorScheme.primary else Tokens.Warning)
+                    ChargeSpeed.classify(s.averagePowerW)?.let { StatusPill(stringResource(it.labelRes()), it.color(), icon = Icons.Outlined.Speed) }
                 }
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(12.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Spacer(Modifier.height(6.dp))
                 KeyValueRow(stringResource(R.string.start_time), dateTimeText(s.startTime) + if (!s.startPrecise) " *" else "")
                 KeyValueRow(stringResource(R.string.end_time), s.endTime?.let { dateTimeText(it) + if (!s.endPrecise) " *" else "" }
                     ?: stringResource(R.string.session_open))
@@ -299,7 +350,7 @@ fun SessionDetailScreen(onBack: () -> Unit, vm: SessionDetailViewModel = hiltVie
         if (!s.isComplete && !s.isOpen) item { InfoBanner(stringResource(R.string.partial_session_explainer), tint = Tokens.Warning) }
         if (st.typicalPowerW != null || st.typicalPercentPerHour != null) item {
             AppCard {
-                SectionHeader(stringResource(R.string.compared_to_usual, stringResource(s.source.labelRes())))
+                CardHeader(stringResource(R.string.compared_to_usual, stringResource(s.source.labelRes())), Icons.AutoMirrored.Outlined.CompareArrows)
                 KeyValueRow(stringResource(R.string.average_power),
                     listOfNotNull(s.averagePowerW?.let(Fmt::power), st.typicalPowerW?.let { stringResource(R.string.usual_value, Fmt.power(it)) })
                         .joinToString(" · ").ifEmpty { null })
@@ -314,7 +365,7 @@ fun SessionDetailScreen(onBack: () -> Unit, vm: SessionDetailViewModel = hiltVie
         val readings = st.readings
         item {
             AppCard {
-                SectionHeader(stringResource(R.string.level_over_time))
+                CardHeader(stringResource(R.string.level_over_time), Icons.Outlined.BatteryChargingFull)
                 val pts = readings.mapNotNull { r -> r.level?.let { ChartPoint((r.timestamp - s.startTime) / 60_000f, it.toFloat()) } }
                 if (pts.size < 2) Text(stringResource(R.string.not_enough_samples)) else
                     LineChart(pts, stringResource(R.string.chart_level_desc, Fmt.percent(pts.first().y.toInt()), Fmt.percent(pts.last().y.toInt())),
@@ -323,7 +374,7 @@ fun SessionDetailScreen(onBack: () -> Unit, vm: SessionDetailViewModel = hiltVie
         }
         item {
             AppCard {
-                SectionHeader(stringResource(R.string.power_over_time))
+                CardHeader(stringResource(R.string.power_over_time), Icons.Outlined.Bolt)
                 val pts = readings.mapNotNull { r -> r.powerW?.takeIf { it > 0 }?.let { ChartPoint((r.timestamp - s.startTime) / 60_000f, it) } }
                 if (pts.size < 2) Text(stringResource(R.string.not_enough_samples)) else
                     LineChart(pts, stringResource(R.string.chart_live_power_desc, Fmt.power(pts.minOf { it.y }), Fmt.power(pts.maxOf { it.y }), Fmt.power(pts.last().y)),
@@ -332,7 +383,7 @@ fun SessionDetailScreen(onBack: () -> Unit, vm: SessionDetailViewModel = hiltVie
         }
         item {
             AppCard {
-                SectionHeader(stringResource(R.string.temperature_over_time))
+                CardHeader(stringResource(R.string.temperature_over_time), Icons.Outlined.Thermostat)
                 val pts = readings.mapNotNull { r -> r.temperatureC?.let { ChartPoint((r.timestamp - s.startTime) / 60_000f, com.chargemaster.app.core.common.TemperatureConverter.fromCelsius(it, st.unit)) } }
                 if (pts.size < 2) Text(stringResource(R.string.not_enough_samples)) else
                     LineChart(pts, stringResource(R.string.chart_temp_desc, Fmt.decimal1(pts.minOf { it.y }), Fmt.decimal1(pts.maxOf { it.y })),
@@ -342,7 +393,7 @@ fun SessionDetailScreen(onBack: () -> Unit, vm: SessionDetailViewModel = hiltVie
         st.capacity?.let { est ->
             item {
                 AppCard {
-                    SectionHeader(stringResource(R.string.capacity_from_session))
+                    CardHeader(stringResource(R.string.capacity_from_session), Icons.Outlined.BatteryStd)
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(est.capacityMah?.let(Fmt::capacity) ?: stringResource(R.string.insufficient_data), style = MaterialTheme.typography.titleLarge,
                             modifier = Modifier.weight(1f))

@@ -5,7 +5,10 @@ import android.provider.Settings
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -26,13 +29,14 @@ object Tokens {
     val Primary = Color(0xFF145C4A)
     val Secondary = Color(0xFF4B8B78)
     val Accent = Color(0xFF69D7AD)
-    val BackgroundLight = Color(0xFFF5F8F6)
+    val BackgroundLight = Color(0xFFF3F6F4)
     val SurfaceLight = Color(0xFFFFFFFF)
-    val BackgroundDark = Color(0xFF0D1713)
-    val SurfaceDark = Color(0xFF172720)
+    val BackgroundDark = Color(0xFF0B1410)
+    val SurfaceDark = Color(0xFF131F1A)
     val Navy = Color(0xFF0F1E2E)
     val Warning = Color(0xFFE0A100)
     val Danger = Color(0xFFD64545)
+    val Hot = Color(0xFFE0701F)
     val Info = Color(0xFF3E7CB1)
 }
 
@@ -45,8 +49,10 @@ val LightColors: ColorScheme = lightColorScheme(
     background = Tokens.BackgroundLight, onBackground = Color(0xFF17201C),
     surface = Tokens.SurfaceLight, onSurface = Color(0xFF17201C),
     surfaceVariant = Color(0xFFE3ECE7), onSurfaceVariant = Color(0xFF46524C),
-    surfaceContainer = Color(0xFFEDF3EF), surfaceContainerHigh = Color(0xFFE6EEE9),
-    outline = Color(0xFF76847D), outlineVariant = Color(0xFFC5D0CA),
+    surfaceContainerLowest = Color.White, surfaceContainerLow = Color(0xFFFFFFFF),
+    surfaceContainer = Color(0xFFEAF0EC), surfaceContainerHigh = Color(0xFFE2EAE5),
+    surfaceContainerHighest = Color(0xFFDAE4DE),
+    outline = Color(0xFF76847D), outlineVariant = Color(0xFFDCE4DF),
     error = Tokens.Danger,
 )
 
@@ -59,15 +65,19 @@ val DarkColors: ColorScheme = darkColorScheme(
     background = Tokens.BackgroundDark, onBackground = Color(0xFFDDE6E1),
     surface = Tokens.SurfaceDark, onSurface = Color(0xFFDDE6E1),
     surfaceVariant = Color(0xFF22362D), onSurfaceVariant = Color(0xFFB2C2BA),
-    surfaceContainer = Color(0xFF1A2C24), surfaceContainerHigh = Color(0xFF20342B),
-    outline = Color(0xFF7C8D85), outlineVariant = Color(0xFF34473E),
+    surfaceContainerLowest = Color(0xFF08100C), surfaceContainerLow = Color(0xFF131F1A),
+    surfaceContainer = Color(0xFF172620), surfaceContainerHigh = Color(0xFF1E3029),
+    surfaceContainerHighest = Color(0xFF263A31),
+    outline = Color(0xFF7C8D85), outlineVariant = Color(0xFF26372F),
     error = Color(0xFFFF8A80),
 )
 
 private val AmoledColors: ColorScheme = DarkColors.copy(
     background = Color.Black, surface = Color(0xFF070B09),
+    surfaceContainerLowest = Color.Black, surfaceContainerLow = Color(0xFF070C0A),
     surfaceContainer = Color(0xFF0B120F), surfaceContainerHigh = Color(0xFF101A15),
-    surfaceVariant = Color(0xFF14211B),
+    surfaceContainerHighest = Color(0xFF15221C),
+    surfaceVariant = Color(0xFF14211B), outlineVariant = Color(0xFF1A2A22),
 )
 
 private fun ColorScheme.highContrast(dark: Boolean): ColorScheme = if (dark) copy(
@@ -85,9 +95,20 @@ private val AppTypography = Typography().let { t ->
         headlineSmall = t.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
         titleLarge = t.titleLarge.copy(fontWeight = FontWeight.SemiBold),
         titleMedium = t.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+        headlineMedium = t.headlineMedium.copy(fontWeight = FontWeight.SemiBold, letterSpacing = (-0.25).sp),
+        titleSmall = t.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+        labelLarge = t.labelLarge.copy(fontWeight = FontWeight.SemiBold),
         labelSmall = TextStyle(fontFamily = FontFamily.Default, fontSize = 11.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.4.sp),
     )
 }
+
+private val AppShapes = Shapes(
+    extraSmall = RoundedCornerShape(8.dp),
+    small = RoundedCornerShape(12.dp),
+    medium = RoundedCornerShape(16.dp),
+    large = RoundedCornerShape(24.dp),
+    extraLarge = RoundedCornerShape(28.dp),
+)
 
 /** True when motion should be minimized (system animator scale 0 or in-app setting). */
 val LocalReduceMotion = staticCompositionLocalOf { false }
@@ -119,6 +140,6 @@ fun ChargeMasterTheme(
         Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
     }.getOrDefault(false)
     CompositionLocalProvider(LocalReduceMotion provides (reduceMotion || systemReduce)) {
-        MaterialTheme(colorScheme = scheme, typography = AppTypography, content = content)
+        MaterialTheme(colorScheme = scheme, typography = AppTypography, shapes = AppShapes, content = content)
     }
 }

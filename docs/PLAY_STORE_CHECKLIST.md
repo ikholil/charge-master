@@ -5,8 +5,8 @@
 - [ ] Confirm the "Charge Master" name and check trademark / Play listing availability
 - [x] Adaptive launcher icon with a monochrome layer (themed icons)
 - [x] Splash screen (`core-splashscreen`)
-- [ ] 512×512 hi-res icon and 1024×500 feature graphic
-- [ ] Phone screenshots in EN and BN (starting points in `docs/screenshots/`)
+- [x] 512×512 hi-res icon and 1024×500 feature graphic (`play-store/icon_512x512.png`, `play-store/feature_graphic_1024x500.png`)
+- [x] Phone screenshots in EN and BN (`play-store/screenshots/en/`, `play-store/screenshots/bn/`, plus `docs/screenshots/`)
 
 ## Build
 - [x] R8 minification and resource shrinking

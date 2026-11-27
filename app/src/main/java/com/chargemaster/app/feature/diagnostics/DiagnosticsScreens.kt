@@ -7,7 +7,15 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.outlined.BatteryStd
+import androidx.compose.material.icons.outlined.PhoneAndroid
+import androidx.compose.material.icons.outlined.Sensors
+import androidx.compose.material.icons.outlined.Storage
+import androidx.compose.material.icons.outlined.Verified
+import com.chargemaster.app.core.design.CardHeader
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -43,7 +51,6 @@ import com.chargemaster.app.core.design.InfoBanner
 import com.chargemaster.app.core.design.KeyValueRow
 import com.chargemaster.app.core.design.NavRow
 import com.chargemaster.app.core.design.ScreenScaffold
-import com.chargemaster.app.core.design.SectionHeader
 import com.chargemaster.app.core.design.dateTimeText
 import com.chargemaster.app.core.design.labelRes
 import com.chargemaster.app.core.security.DeviceInfoPolicy
@@ -103,7 +110,7 @@ fun DiagnosticsScreen(onBack: () -> Unit, onOpenReport: () -> Unit, vm: Diagnost
     ScreenScaffold(title = stringResource(R.string.diagnostics), onBack = onBack) {
         item {
             AppCard {
-                SectionHeader(stringResource(R.string.report_device))
+                CardHeader(stringResource(R.string.report_device), Icons.Outlined.PhoneAndroid)
                 KeyValueRow(stringResource(R.string.manufacturer), d.manufacturer)
                 KeyValueRow(stringResource(R.string.model), d.model)
                 KeyValueRow(stringResource(R.string.android_version), "${d.androidVersion} (API ${d.sdk})")
@@ -111,7 +118,7 @@ fun DiagnosticsScreen(onBack: () -> Unit, onOpenReport: () -> Unit, vm: Diagnost
         }
         item {
             AppCard {
-                SectionHeader(stringResource(R.string.report_battery_now))
+                CardHeader(stringResource(R.string.report_battery_now), Icons.Outlined.BatteryStd)
                 KeyValueRow(stringResource(R.string.metric_status), s?.let { stringResource(it.status.labelRes()) })
                 KeyValueRow(stringResource(R.string.charging_source), s?.let { stringResource(it.source.labelRes()) })
                 KeyValueRow(stringResource(R.string.metric_android_health), s?.let { stringResource(it.health.labelRes()) })
@@ -125,7 +132,7 @@ fun DiagnosticsScreen(onBack: () -> Unit, onOpenReport: () -> Unit, vm: Diagnost
         }
         item {
             AppCard {
-                SectionHeader(stringResource(R.string.sensor_availability))
+                CardHeader(stringResource(R.string.sensor_availability), Icons.Outlined.Sensors)
                 val a = s?.let(SensorAvailability::of)
                 AvailabilityRow(R.string.metric_current, a?.current)
                 AvailabilityRow(R.string.current_average, a?.currentAverage)
@@ -140,7 +147,7 @@ fun DiagnosticsScreen(onBack: () -> Unit, onOpenReport: () -> Unit, vm: Diagnost
         }
         item {
             AppCard {
-                SectionHeader(stringResource(R.string.data_reliability))
+                CardHeader(stringResource(R.string.data_reliability), Icons.Outlined.Verified)
                 KeyValueRow(stringResource(R.string.current_unit_detected), st.calibration.learnedUnit?.let {
                     stringResource(if (it == com.chargemaster.app.domain.model.CurrentUnit.MICROAMPERES) R.string.unit_microamps else R.string.unit_milliamps)
                 } ?: stringResource(R.string.not_yet_learned))
@@ -152,30 +159,34 @@ fun DiagnosticsScreen(onBack: () -> Unit, onOpenReport: () -> Unit, vm: Diagnost
         }
         item {
             AppCard {
-                SectionHeader(stringResource(R.string.report_coverage))
+                CardHeader(stringResource(R.string.report_coverage), Icons.Outlined.Storage)
                 KeyValueRow(stringResource(R.string.stored_readings), st.readingCount.toString())
                 KeyValueRow(stringResource(R.string.history_since), st.oldest?.let(::dateTimeText))
                 KeyValueRow(stringResource(R.string.recorded_sessions), st.sessionCount.toString())
             }
         }
         item {
-            AppCard { NavRow(stringResource(R.string.battery_report), stringResource(R.string.report_subtitle), Icons.Outlined.Description, onOpenReport) }
+            AppCard(contentPadding = 8.dp) {
+                Column(Modifier.padding(horizontal = 10.dp)) {
+                    NavRow(stringResource(R.string.battery_report), stringResource(R.string.report_subtitle), Icons.Outlined.Description, onOpenReport)
+                }
+            }
         }
     }
 }
 
 @Composable
 private fun AvailabilityRow(label: Int, ok: Boolean?) {
-    Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}.let { it }, verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 2.dp).semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically) {
         Icon(
             if (ok == true) Icons.Outlined.CheckCircle else Icons.Outlined.RemoveCircleOutline, null,
             tint = if (ok == true) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
-            modifier = Modifier.size(18.dp),
+            modifier = Modifier.size(20.dp),
         )
         Spacer(Modifier.width(10.dp))
         Text(stringResource(label), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-        Text(stringResource(if (ok == true) R.string.supported else R.string.not_supported), style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(stringResource(if (ok == true) R.string.supported else R.string.not_supported), style = MaterialTheme.typography.labelMedium,
+            color = if (ok == true) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
     }
     Spacer(Modifier.height(6.dp))
 }
@@ -191,8 +202,8 @@ fun ReportScreen(onBack: () -> Unit, vm: DiagnosticsViewModel = hiltViewModel())
     ScreenScaffold(title = stringResource(R.string.battery_report), onBack = onBack) {
         item { InfoBanner(stringResource(R.string.report_privacy_note)) }
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(enabled = st.report.isNotEmpty(), onClick = {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(modifier = Modifier.weight(1f), enabled = st.report.isNotEmpty(), onClick = {
                     val send = Intent(Intent.ACTION_SEND).apply {
                         type = "text/plain"
                         putExtra(Intent.EXTRA_SUBJECT, subject)
@@ -204,7 +215,7 @@ fun ReportScreen(onBack: () -> Unit, vm: DiagnosticsViewModel = hiltViewModel())
                     Spacer(Modifier.width(8.dp))
                     Text(chooserTitle)
                 }
-                OutlinedButton(enabled = st.report.isNotEmpty(), onClick = {
+                OutlinedButton(modifier = Modifier.weight(1f), enabled = st.report.isNotEmpty(), onClick = {
                     clipboard.setText(AnnotatedString(st.report))
                     Toast.makeText(context, copiedText, Toast.LENGTH_SHORT).show()
                 }) {
@@ -215,7 +226,7 @@ fun ReportScreen(onBack: () -> Unit, vm: DiagnosticsViewModel = hiltViewModel())
             }
         }
         item {
-            AppCard {
+            AppCard(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
                 SelectionContainer {
                     Text(st.report, style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace))
                 }

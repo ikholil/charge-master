@@ -1,6 +1,24 @@
 package com.chargemaster.app.feature.temperature
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.BiasAlignment
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.automirrored.outlined.ShowChart
+import androidx.compose.material.icons.outlined.Summarize
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import com.chargemaster.app.core.design.CardHeader
+import com.chargemaster.app.core.design.IconBadge
+import com.chargemaster.app.core.design.StatusPill
+import com.chargemaster.app.core.design.ZoneGauge
+import com.chargemaster.app.core.design.color
+import com.chargemaster.app.core.design.descriptionRes
+import com.chargemaster.app.domain.engine.TemperatureZone
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DeviceThermostat
@@ -34,7 +52,6 @@ import com.chargemaster.app.core.design.MetricGrid
 import com.chargemaster.app.core.design.Period
 import com.chargemaster.app.core.design.PeriodSelector
 import com.chargemaster.app.core.design.ScreenScaffold
-import com.chargemaster.app.core.design.SectionHeader
 import com.chargemaster.app.core.design.Tokens
 import com.chargemaster.app.core.design.ValueKind
 import com.chargemaster.app.core.design.labelRes
@@ -86,10 +103,10 @@ fun TemperatureScreen(onBack: () -> Unit, vm: TemperatureViewModel = hiltViewMod
     val u = st.unit
     fun t(c: Float?) = c?.let { Fmt.temperature(it, u) }
     ScreenScaffold(title = stringResource(R.string.temperature_monitor), onBack = onBack) {
+        item { TemperatureHero(st.snapshot?.temperatureC, u) }
         item {
             MetricGrid(
                 listOf(
-                    { m -> MetricCard(stringResource(R.string.battery_temperature), t(st.snapshot?.temperatureC), Icons.Outlined.Thermostat, m) },
                     { m -> MetricCard(stringResource(R.string.metric_thermal),
                         st.snapshot?.thermalStatus?.takeIf { it != ThermalStatus.UNSUPPORTED }?.let { stringResource(it.labelRes()) },
                         Icons.Outlined.DeviceThermostat, m, unavailableText = stringResource(R.string.not_supported)) },
@@ -104,7 +121,7 @@ fun TemperatureScreen(onBack: () -> Unit, vm: TemperatureViewModel = hiltViewMod
         item { PeriodSelector(st.period, { vm.period.value = it }) }
         item {
             AppCard {
-                SectionHeader(stringResource(R.string.temperature_history))
+                CardHeader(stringResource(R.string.temperature_history), Icons.AutoMirrored.Outlined.ShowChart, tint = Tokens.Warning)
                 val origin = st.readings.firstOrNull()?.timestamp ?: 0L
                 val pts = st.readings.mapNotNull { r -> r.temperatureC?.let { ChartPoint((r.timestamp - origin) / 3_600_000f, TemperatureConverter.fromCelsius(it, u)) } }
                 val span = st.readings.firstOrNull()?.let { dateTimeText(it.timestamp) to dateTimeText(st.readings.last().timestamp) }
@@ -120,7 +137,7 @@ fun TemperatureScreen(onBack: () -> Unit, vm: TemperatureViewModel = hiltViewMod
         st.stats?.let { s ->
             item {
                 AppCard {
-                    SectionHeader(stringResource(R.string.summary))
+                    CardHeader(stringResource(R.string.summary), Icons.Outlined.Summarize, tint = Tokens.Warning)
                     KeyValueRow(stringResource(R.string.min_observed), t(s.min), kind = ValueKind.HISTORICAL)
                     KeyValueRow(stringResource(R.string.max_observed), t(s.max), kind = ValueKind.HISTORICAL)
                     KeyValueRow(stringResource(R.string.average), t(s.average), kind = ValueKind.HISTORICAL)
@@ -135,5 +152,51 @@ fun TemperatureScreen(onBack: () -> Unit, vm: TemperatureViewModel = hiltViewMod
             }
         }
         item { InfoBanner(stringResource(R.string.temperature_explainer)) }
+    }
+}
+
+@Composable
+private fun TemperatureHero(celsius: Float?, unit: TemperatureUnit) {
+    val zone = TemperatureZone.of(celsius)
+    val color = zone?.color() ?: MaterialTheme.colorScheme.outline
+    val zoneDescription = stringResource(R.string.temperature_zone) + ": " +
+        (zone?.let { stringResource(it.labelRes()) } ?: stringResource(R.string.unavailable))
+    AppCard {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconBadge(Icons.Outlined.Thermostat, tint = color, size = 44.dp)
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.battery_temperature), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(celsius?.let { Fmt.temperature(it, unit) } ?: stringResource(R.string.unavailable), style = MaterialTheme.typography.headlineMedium)
+            }
+            zone?.let { StatusPill(stringResource(it.labelRes()), color) }
+        }
+        Spacer(Modifier.height(16.dp))
+        Text(stringResource(R.string.temperature_zone), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(6.dp))
+        ZoneGauge(
+            value = celsius, range = 0f..50f,
+            zones = listOf(
+                TemperatureZone.COLD_BELOW to TemperatureZone.COLD.color(),
+                TemperatureZone.WARM_FROM to TemperatureZone.IDEAL.color(),
+                TemperatureZone.HOT_FROM to TemperatureZone.WARM.color(),
+                TemperatureZone.CRITICAL_FROM to TemperatureZone.HOT.color(),
+                50f to TemperatureZone.CRITICAL.color(),
+            ),
+            modifier = Modifier.semantics { contentDescription = zoneDescription },
+        )
+        Box(Modifier.fillMaxWidth().height(16.dp)) {
+            listOf(0f, TemperatureZone.COLD_BELOW, TemperatureZone.WARM_FROM, TemperatureZone.HOT_FROM, TemperatureZone.CRITICAL_FROM, 50f).forEach { c ->
+                Text(
+                    String.format(java.util.Locale.getDefault(), "%.0f°", TemperatureConverter.fromCelsius(c, unit)),
+                    style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.align(BiasAlignment(c / 25f - 1f, 0f)),
+                )
+            }
+        }
+        zone?.let {
+            Spacer(Modifier.height(12.dp))
+            InfoBanner(stringResource(it.descriptionRes()), tint = color)
+        }
     }
 }
