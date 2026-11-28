@@ -3,7 +3,7 @@
 A single Gradle module, organised by package into layers that only depend inward.
 
 ```
-com.chargemaster.app
+com.hikmahlab.chargemaster
 ├── app/                 Application, MainActivity, navigation graph
 ├── core/
 │   ├── common/          Units & formatting, coroutine scopes/dispatchers, Clock

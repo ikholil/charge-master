@@ -4,8 +4,8 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT_DIR"
 
-APP_ID="com.chargemaster.app.debug"
-MAIN_ACTIVITY="com.chargemaster.app.app.MainActivity"
+APP_ID="com.hikmahlab.chargemaster.debug"
+MAIN_ACTIVITY="com.hikmahlab.chargemaster.app.MainActivity"
 INTERVAL="${LIVE_RELOAD_INTERVAL:-1}"
 SERIAL="${ANDROID_SERIAL:-}"
 AVD="${ANDROID_AVD:-}"

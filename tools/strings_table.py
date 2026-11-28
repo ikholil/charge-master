@@ -440,6 +440,21 @@ S = {
 "export_empty": ("No charging sessions to export yet", "এক্সপোর্ট করার মতো কোনো চার্জিং সেশন এখনও নেই"),
 "general": ("General", "সাধারণ"),
 "about": ("About", "সম্পর্কে"),
+"about_subtitle": ("Creator studio, version & contact", "নির্মাতা স্টুডিও, সংস্করণ ও যোগাযোগ"),
+"about_created_by": ("Created by Hikmahlab", "নির্মাতা: হিকমাহল্যাব (Hikmahlab)"),
+"about_studio_title": ("Hikmahlab Studio", "হিকমাহল্যাব স্টুডিও"),
+"about_studio_body": ("Hikmahlab Studio (founded 2020) is a boutique digital product engineering studio crafting web applications, mobile apps, and cloud platforms. Headquartered in Sector 11, Uttara, Dhaka, Bangladesh, serving clients worldwide.", "হিকমাহল্যাব স্টুডিও (প্রতিষ্ঠিত ২০২০) একটি ডিজিটাল প্রোডাক্ট ইঞ্জিনিয়ারিং স্টুডিও, যা ওয়েব অ্যাপ্লিকেশন, মোবাইল অ্যাপ এবং ক্লাউড প্ল্যাটফর্ম তৈরি করে। সদর দপ্তর সেক্টর ১১, উত্তরা, ঢাকা, বাংলাদেশ; বিশ্বব্যাপী ক্লায়েন্টদের সেবা প্রদান করে।"),
+"about_website": ("Website", "ওয়েবসাইট"),
+"about_email": ("Email", "ইমেইল"),
+"about_phone": ("Phone", "ফোন"),
+"about_location_title": ("Location", "অবস্থান"),
+"about_location_value": ("Sector 11, Uttara, Dhaka 1230, Bangladesh", "সেক্টর ১১, উত্তরা, ঢাকা ১২৩০, বাংলাদেশ"),
+"about_version_footer": ("Version %1$s · By Hikmahlab", "সংস্করণ %1$s · নির্মাতা হিকমাহল্যাব"),
+"kindest_range": ("Kindest range 20–80%", "সবচেয়ে উপযোগী সীমা ২০–৮০%"),
+"readings": ("Readings", "রিডিং"),
+"explore": ("Explore", "আরও দেখুন"),
+"estimates": ("Estimates", "অনুমান"),
+"device": ("Device", "ডিভাইস"),
 }
 
 # Plurals: key -> {quantity: (English, Bangla)}

@@ -20,4 +20,4 @@ This data never leaves the device. The app has no internet permission.
 
 **Retention and deletion.** Readings are kept for the period you choose: 7, 30, 90 or 365 days. You can delete everything at any time in Settings › Data. Uninstalling the app removes all data. The battery history database is excluded from cloud backup.
 
-**Contact.** [Add a developer contact email before publishing.]
+**Contact.** Hikmahlab — [hello@hikmahlab.com](mailto:hello@hikmahlab.com) · [https://hikmahlab.com](https://hikmahlab.com)

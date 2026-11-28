@@ -15,11 +15,11 @@ val keystoreProps = Properties().apply {
 }
 
 android {
-    namespace = "com.chargemaster.app"
+    namespace = "com.hikmahlab.chargemaster"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.chargemaster.app"
+        applicationId = "com.hikmahlab.chargemaster"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

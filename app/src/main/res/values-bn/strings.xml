@@ -425,6 +425,21 @@
     <string name="export_empty">এক্সপোর্ট করার মতো কোনো চার্জিং সেশন এখনও নেই</string>
     <string name="general">সাধারণ</string>
     <string name="about">সম্পর্কে</string>
+    <string name="about_subtitle">নির্মাতা স্টুডিও, সংস্করণ ও যোগাযোগ</string>
+    <string name="about_created_by">নির্মাতা: হিকমাহল্যাব (Hikmahlab)</string>
+    <string name="about_studio_title">হিকমাহল্যাব স্টুডিও</string>
+    <string name="about_studio_body">হিকমাহল্যাব স্টুডিও (প্রতিষ্ঠিত ২০২০) একটি ডিজিটাল প্রোডাক্ট ইঞ্জিনিয়ারিং স্টুডিও, যা ওয়েব অ্যাপ্লিকেশন, মোবাইল অ্যাপ এবং ক্লাউড প্ল্যাটফর্ম তৈরি করে। সদর দপ্তর সেক্টর ১১, উত্তরা, ঢাকা, বাংলাদেশ; বিশ্বব্যাপী ক্লায়েন্টদের সেবা প্রদান করে।</string>
+    <string name="about_website">ওয়েবসাইট</string>
+    <string name="about_email">ইমেইল</string>
+    <string name="about_phone">ফোন</string>
+    <string name="about_location_title">অবস্থান</string>
+    <string name="about_location_value">সেক্টর ১১, উত্তরা, ঢাকা ১২৩০, বাংলাদেশ</string>
+    <string name="about_version_footer">সংস্করণ %1$s · নির্মাতা হিকমাহল্যাব</string>
+    <string name="kindest_range" formatted="false">সবচেয়ে উপযোগী সীমা ২০–৮০%</string>
+    <string name="readings">রিডিং</string>
+    <string name="explore">আরও দেখুন</string>
+    <string name="estimates">অনুমান</string>
+    <string name="device">ডিভাইস</string>
     <plurals name="sessions_count">
         <item quantity="one">এই সময়ে %1$dটি সেশন</item>
         <item quantity="other">এই সময়ে %1$dটি সেশন</item>

@@ -1,7 +1,7 @@
 # Play Store release checklist
 
 ## Identity
-- [x] Application ID: `com.chargemaster.app` (debug builds use `.debug`)
+- [x] Application ID: `com.hikmahlab.chargemaster` (debug builds use `.debug`)
 - [ ] Confirm the "Charge Master" name and check trademark / Play listing availability
 - [x] Adaptive launcher icon with a monochrome layer (themed icons)
 - [x] Splash screen (`core-splashscreen`)

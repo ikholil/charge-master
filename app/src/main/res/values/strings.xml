@@ -425,6 +425,21 @@
     <string name="export_empty">No charging sessions to export yet</string>
     <string name="general">General</string>
     <string name="about">About</string>
+    <string name="about_subtitle">Creator studio, version &amp; contact</string>
+    <string name="about_created_by">Created by Hikmahlab</string>
+    <string name="about_studio_title">Hikmahlab Studio</string>
+    <string name="about_studio_body">Hikmahlab Studio (founded 2020) is a boutique digital product engineering studio crafting web applications, mobile apps, and cloud platforms. Headquartered in Sector 11, Uttara, Dhaka, Bangladesh, serving clients worldwide.</string>
+    <string name="about_website">Website</string>
+    <string name="about_email">Email</string>
+    <string name="about_phone">Phone</string>
+    <string name="about_location_title">Location</string>
+    <string name="about_location_value">Sector 11, Uttara, Dhaka 1230, Bangladesh</string>
+    <string name="about_version_footer">Version %1$s · By Hikmahlab</string>
+    <string name="kindest_range" formatted="false">Kindest range 20–80%</string>
+    <string name="readings">Readings</string>
+    <string name="explore">Explore</string>
+    <string name="estimates">Estimates</string>
+    <string name="device">Device</string>
     <plurals name="sessions_count">
         <item quantity="one">%1$d session in this period</item>
         <item quantity="other">%1$d sessions in this period</item>

@@ -107,6 +107,8 @@ Initial release of Charge Master:
 
 ## Play Console Metadata
 
+- **Developer / Creator**: Hikmahlab (`https://hikmahlab.com` · `hello@hikmahlab.com`)
+- **Package / Application ID**: `com.hikmahlab.chargemaster`
 - **Category**: Tools
 - **Tags**: Battery, Charging, Utilities
 - **Target Audience**: 18+ / General (Not directed at children)
