@@ -1,6 +1,6 @@
 # Build & test
 
-Requirements: JDK 17+ and an Android SDK with platform 35 and build-tools 35. Point to the SDK in `local.properties` (`sdk.dir=...`) or with `ANDROID_HOME`.
+Requirements: JDK 17+ and an Android SDK with platform 36 and build-tools 35+. Point to the SDK in `local.properties` (`sdk.dir=...`) or with `ANDROID_HOME`.
 
 Build a debug APK:
 

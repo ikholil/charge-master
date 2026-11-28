@@ -43,7 +43,7 @@ Charge Master is an offline-first, privacy-first Android app for battery and cha
 
 Kotlin 2.0 · Jetpack Compose + Material 3 · MVVM + Clean Architecture · Hilt · Room · DataStore · WorkManager · Glance · Coroutines/Flow · JUnit + Robolectric + Compose UI tests (81) · GitHub Actions CI.
 
-Min SDK 26 (Android 8.0) · Target/compile SDK 35.
+Min SDK 26 (Android 8.0) · Target/compile SDK 36.
 
 ## Docs
 
